@@ -34,10 +34,10 @@ Após o repositório estar conectado e verificarmos que funciona como esperado r
 
 6. Realizar git log para ver histórico de commits neste repositório.
    ```
-git log 
+    git log 
    ```
 
 7. Realizar git revert para reverter alterações de um commit.
    ```
-git revert 
+    git revert 
    ```
