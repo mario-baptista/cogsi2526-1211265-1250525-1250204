@@ -24,3 +24,20 @@ Após o repositório estar conectado e verificarmos que funciona como esperado r
       git tag v1.1.0
       git push tags
     ```
+5. Criar um campo chamado **professionalLicenseNumber** dentro da classe Vet.
+   ```
+    @Column(name = "professionalLicenseNumber")
+    @NotEmpty
+    protected String professionalLicenseNumber;
+    ```
+    
+
+6. Realizar git log para ver histórico de commits neste repositório.
+   ```
+git log 
+   ```
+
+7. Realizar git revert para reverter alterações de um commit.
+   ```
+git revert 
+   ```
