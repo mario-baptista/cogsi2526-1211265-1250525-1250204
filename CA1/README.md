@@ -39,5 +39,5 @@ Após o repositório estar conectado e verificarmos que funciona como esperado r
 
 7. Realizar git revert para reverter alterações de um commit.
    ```
-    git revert 
+    git revert 7a8abfa91907774e097194045c4ddc21c87d6d56
    ```
