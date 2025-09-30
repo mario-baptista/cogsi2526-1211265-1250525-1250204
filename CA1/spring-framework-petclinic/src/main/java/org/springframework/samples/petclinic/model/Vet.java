@@ -50,6 +50,10 @@ public class Vet extends Person {
     @NotEmpty
     protected String professionalLicenseNumber;
 
+    @Column(name = "email")
+    @NotEmpty
+    protected String email;
+
     public String getProfessionalLicenseNumber() {
         return this.professionalLicenseNumber;
     }
@@ -57,10 +61,17 @@ public class Vet extends Person {
     public void setProfessionalLicenseNumber(String professionalLicenseNumber) {
         this.professionalLicenseNumber = professionalLicenseNumber;
     }
-    
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "vet_specialties", joinColumns = @JoinColumn(name = "vet_id"),
-        inverseJoinColumns = @JoinColumn(name = "specialty_id"))
+    @JoinTable(name = "vet_specialties", joinColumns = @JoinColumn(name = "vet_id"), inverseJoinColumns = @JoinColumn(name = "specialty_id"))
     private Set<Specialty> specialties;
 
     protected Set<Specialty> getSpecialtiesInternal() {

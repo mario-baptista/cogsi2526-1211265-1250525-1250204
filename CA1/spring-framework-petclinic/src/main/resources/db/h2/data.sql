@@ -1,9 +1,9 @@
-INSERT INTO vets VALUES (default, 'James', 'Carter', '123456789');
-INSERT INTO vets VALUES (default, 'Helen', 'Leary', '987654321');
-INSERT INTO vets VALUES (default, 'Linda', 'Douglas', '456789123');
-INSERT INTO vets VALUES (default, 'Rafael', 'Ortega', '321654987');
-INSERT INTO vets VALUES (default, 'Henry', 'Stevens', '159753486');
-INSERT INTO vets VALUES (default, 'Sharon', 'Jenkins', '789123456');
+INSERT INTO vets VALUES (default, 'James', 'Carter', '123456789', 'james@email.com');
+INSERT INTO vets VALUES (default, 'Helen', 'Leary', '987654321', 'helen@email.com');
+INSERT INTO vets VALUES (default, 'Linda', 'Douglas', '456789123', 'linda@email.com');
+INSERT INTO vets VALUES (default, 'Rafael', 'Ortega', '321654987', 'rafael@email.com');
+INSERT INTO vets VALUES (default, 'Henry', 'Stevens', '159753486', 'henry@email.com');
+INSERT INTO vets VALUES (default, 'Sharon', 'Jenkins', '789123456', 'sharon@email.com');
 
 INSERT INTO specialties VALUES (default, 'radiology');
 INSERT INTO specialties VALUES (default, 'surgery');
