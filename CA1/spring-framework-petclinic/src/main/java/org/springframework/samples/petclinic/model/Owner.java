@@ -52,10 +52,6 @@ public class Owner extends Person {
     @NotEmpty
     private String city;
 
-    @Column(name = "nif")
-    @NotEmpty
-    private Number nif;
-
     @Column(name = "telephone")
     @NotEmpty
     @Digits(fraction = 0, integer = 10)
@@ -79,14 +75,6 @@ public class Owner extends Person {
 
     public void setCity(String city) {
         this.city = city;
-    }
-
-    public Number getNif() {
-        return this.nif;
-    }
-
-    public void setNif(Number nif) {
-        this.nif = nif;
     }
 
     public String getTelephone() {

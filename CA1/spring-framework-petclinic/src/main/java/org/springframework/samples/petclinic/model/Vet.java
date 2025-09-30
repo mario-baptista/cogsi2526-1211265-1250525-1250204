@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -47,6 +49,14 @@ public class Vet extends Person {
     @Column(name = "professionalLicenseNumber")
     @NotEmpty
     protected String professionalLicenseNumber;
+
+    public String getProfessionalLicenseNumber() {
+        return this.professionalLicenseNumber;
+    }
+
+    public void setProfessionalLicenseNumber(String professionalLicenseNumber) {
+        this.professionalLicenseNumber = professionalLicenseNumber;
+    }
     
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "vet_specialties", joinColumns = @JoinColumn(name = "vet_id"),
