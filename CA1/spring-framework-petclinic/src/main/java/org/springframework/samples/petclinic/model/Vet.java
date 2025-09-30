@@ -46,6 +46,7 @@ import org.springframework.beans.support.PropertyComparator;
 @Table(name = "vets")
 public class Vet extends Person {
     // Comentário conflict-a
+    // Comentário conflict-b
 
     @Column(name = "professionalLicenseNumber")
     @NotEmpty
