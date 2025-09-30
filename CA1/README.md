@@ -20,12 +20,12 @@ Após o repositório estar conectado e verificarmos que funciona como esperado r
    git commit -m "Ainitial version of spring-petclinic"
    git push
 4. Criar a primeira tag de versão, segundo o padrão ```major.minor.revision```:
-   ```
+   ```sh
       git tag v1.1.0
       git push tags
     ```
 5. Criar um campo chamado **professionalLicenseNumber** dentro da classe Vet.
-   ```
+   ```java
     @Column(name = "professionalLicenseNumber")
     @NotEmpty
     protected String professionalLicenseNumber;
@@ -33,11 +33,38 @@ Após o repositório estar conectado e verificarmos que funciona como esperado r
     
 
 6. Realizar git log para ver histórico de commits neste repositório.
-   ```
+   ```sh
     git log 
    ```
 
 7. Realizar git revert para reverter alterações de um commit.
-   ```
+   ```sh
     git revert 7a8abfa91907774e097194045c4ddc21c87d6d56
    ```
+
+8. Mostrar qual é a branch padrão do repositório e quando foi feito o seu último commit
+   ```sh
+   git remote show origin | grep "HEAD branch"
+   ```
+   Obter o último commit da branch padrão e a sua data:
+   ```sh
+   git log -1 --format="%H%n%an%n%ad%n%s" origin/main
+   ```
+   Os campos apresentados significam:
+   - %H — hash completo do commit
+   - %an — nome do autor
+   - %ad — data completa do commit
+   - %s — mensagem do commit
+
+9. Mostrar quantos contribuintes distintos realizaram commits no repositório
+   ```sh
+   git shortlog -sne
+   ```
+
+10. Marcar o commit final da entrega com a tag ca1-part1
+      ```sh
+      # criar uma tag
+      git tag -a ca1-part1 -m "CA1 - Parte 1: entrega da primeira parte"
+      # enviar a tag para o repositório remoto
+      git push origin ca1-part1
+      ```
