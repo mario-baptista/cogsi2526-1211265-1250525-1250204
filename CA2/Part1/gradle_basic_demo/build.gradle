@@ -69,3 +69,12 @@ task runClient(type:JavaExec, dependsOn: classes){
 
     args 'localhost', '59001'
 }
+
+task backup(type: Copy) {
+    group = "DevOps"
+    description = "Backs up source files to the backup directory"
+  
+    from 'src'
+    into 'backup/src'
+    include '**/*.java'
+}
