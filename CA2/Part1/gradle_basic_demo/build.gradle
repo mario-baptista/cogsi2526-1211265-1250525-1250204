@@ -78,3 +78,11 @@ task backup(type: Copy) {
     into 'backup/src'
     include '**/*.java'
 }
+
+tasks.register('zipBackup', Zip) {
+	dependsOn tasks.named('backup')
+	from("backup/src")
+	archiveFileName = "app-backup.zip"
+	destinationDirectory = file("backup/zips")
+}
+
