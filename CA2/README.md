@@ -1,16 +1,17 @@
 # CA2 — Part 1
 
 
-## Primeiros passos
-1. Clonar o repositório:
+## Getting Started
+1. Clone the repository:
    ```bash
    git clone https://github.com/lmpnogueira/gradle_basic_demo.git
    cd REPO/CA2/part1
    ````
 
-## Adicionar a task runServer
+## Adding the runServer Task
 
-No ficheiro `build.gradle` adicionamos o seguinte código:
+In the `build.gradle` file, add the following code:
+
 
 ```java
 task runServer(type:JavaExec, dependsOn: classes){
@@ -25,14 +26,14 @@ task runServer(type:JavaExec, dependsOn: classes){
 }
 ```
 
-Testar o runServer:
+Test the runServer task:
 
 ![alt text](<Screenshot 2025-10-08 at 19.00.31.png>)
 
 
-## Adicionar um teste unitário
+## Adding a Unit Test
 
-No ficheiro `build.gradle` adicionamos o seguinte código:
+In the `build.gradle` file, add the following code:
 
 ```java
 test {
@@ -43,7 +44,7 @@ test {
 }
 ```
 
-Na pasta `src/test/java/basic_demo` adicionamos o seguinte teste:
+In the folder `src/test/java/basic_demo`, add the following test:
 
 ```java
 package basic_demo;
@@ -60,13 +61,13 @@ public class SimpleTest {
 }
 ```
 
-Testar o teste:
+Test the unit test:
 
 ![alt text](<Screenshot 2025-10-08 at 19.03.26.png>)
 
-## Adicionar a task backup
+## Adding the backup Task
 
-No ficheiro `build.gradle` adicionamos o seguinte código:
+In the `build.gradle` file, add the following code:
 
 ```java
 task backup(type: Copy) {
@@ -79,12 +80,12 @@ task backup(type: Copy) {
 }
 ```
 
-Testar o backup:
+Test the backup task:
 
 ![alt text](<Screenshot 2025-10-08 at 19.04.47.png>)
 
 
-## Adicionar a task zipBackup 
+## Adding the zipBackup Task
 
 
 ```java
@@ -96,9 +97,10 @@ tasks.register('zipBackup', Zip) {
 }
 ```
 
-## Execução da tarefa zipBackup com dependência da tarefa backup:
 
-Na imagem seguinte está explanado o comando *./gradlew zipBackup* e tem o seu intuito que é executar a tarefa do backup, de seguida, procede-se à criação do ficheiro app-backup.zip e o mesmo é inserido dentro da pasta */backup/zips*.
+## Running the zipBackup Task with backup Dependency
+
+The following image illustrates the command ./gradlew zipBackup and its purpose: it first executes the backup task, then creates the app-backup.zip file, which is placed inside the /backup/zips folder.
 
 
 ![alt text](<executeziptask.png>)
@@ -148,9 +150,9 @@ Na segunda parte do output é apresentada a versão do JDK que o gradle está a 
 Antes de finalizar esta explicação, é de notar que o sistema operativo no qual foi instalado o gradle foi o Ubuntu e, como se pode ver na imagem logo acima deste texto, a versão do JDK no sistema operativo é a 21, e o gradle acabou por ser inteligente, e tendo por base o que foi escrito no ficheiro *build.gradle*, o próprio acabou por instalar a versão apropriada. Assim sendo, a utilidade na frase anteriormente apresentada é o reflexo do que torna o gradle toolchain tão benéfico. 
 
 
-## Marcação de Commit com a tag ca2-part1
+## Mark commit Tag ca2-part1
 
-Nesta parte, foi dado um commit com tag ca2-part1, tal como se demonstra no código a seguir.
+At this stage, a commit was made with the tag ca2-part1, as shown below:
 
    ```bash
     git add .
