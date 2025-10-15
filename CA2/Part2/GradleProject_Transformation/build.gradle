@@ -22,3 +22,60 @@ bootJar {
 }
 
 
+// 1) Clean the deployment directory
+task cleanDeploy(type: Delete) {
+    description = "Delete the dev deployment directory"
+    delete "$buildDir/deployment/dev"
+}
+
+// 2) Copy the assembled application artifact (bootJar) into deployment dir
+task copyArtifact(type: Copy) {
+    description = "Copy the main application artifact (bootJar) to the deployment directory"
+    dependsOn bootJar
+    // bootJar.archiveFile is a Provider; use it inside a closure so it resolves at execution time
+    from { bootJar.archiveFile } 
+    into "$buildDir/deployment/dev"
+}
+
+// 3) Copy runtime JAR dependencies into deployment/lib
+task copyRuntimeDeps(type: Copy) {
+    description = "Copy runtime JAR dependencies into deployment/lib"
+    // Ensure classes/deps are resolved
+    dependsOn classes
+    from {
+        // only JAR files from the runtimeClasspath (excludes directories)
+        configurations.runtimeClasspath.filter { it.name.endsWith('.jar') }
+    }
+    into "$buildDir/deployment/dev/lib"
+}
+
+// 4) Copy configuration files and inject tokens (version + timestamp)
+task copyConfig(type: Copy) {
+    description = "Copy properties files to deployment and replace tokens (version, buildTimestamp)"
+    from('src/main/resources') {
+        include '*.properties'
+        // use the Ant ReplaceTokens filter inline (fully-qualified class name)
+        filter(org.apache.tools.ant.filters.ReplaceTokens, 
+               tokens: [
+                   version: (project.hasProperty('version') ? project.version : 'unspecified'),
+                   buildTimestamp: new Date().format("yyyy-MM-dd'T'HH:mm:ss")
+               ])
+    }
+    into "$buildDir/deployment/dev"
+}
+
+// Main orchestrator task that ensures sequential execution
+task deployToDev {
+    description = "Prepare a dev deployment: clean -> artifact -> runtime libs -> configs (with token replacement)"
+    // make this run the steps
+    dependsOn cleanDeploy, copyArtifact, copyRuntimeDeps, copyConfig
+
+    // enforce execution order
+    copyArtifact.mustRunAfter cleanDeploy
+    copyRuntimeDeps.mustRunAfter copyArtifact
+    copyConfig.mustRunAfter copyRuntimeDeps
+
+    doLast {
+        println "Deployment prepared at: ${buildDir}/deployment/dev"
+    }
+}

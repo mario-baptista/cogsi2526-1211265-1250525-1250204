@@ -157,9 +157,67 @@ Nesta parte, foi dado um commit com tag ca2-part1, tal como se demonstra no cód
     git commit -m "Adição de task zipBackup, explicação do gradle wrapper e jdk toolchain e marcação de tag"
     git tag ca2-part1
     git push origin main ca2-part1
-   ````
+   ```
+
+## Create a task named deployToDev
+
+To create the task deployToDev we created multiple smaller tasks with each of the required behaviours. 
+
+```gradle
+task cleanDeploy(type: Delete) {
+    description = "Delete the dev deployment directory"
+    delete "$buildDir/deployment/dev"
+}
 
 
+task copyArtifact(type: Copy) {
+    description = "Copy the main application artifact (bootJar) to the deployment directory"
+    dependsOn bootJar
+    // bootJar.archiveFile is a Provider; use it inside a closure so it resolves at execution time
+    from { bootJar.archiveFile } 
+    into "$buildDir/deployment/dev"
+}
+
+
+task copyRuntimeDeps(type: Copy) {
+    description = "Copy runtime JAR dependencies into deployment/lib"
+    dependsOn classes
+    from {
+        configurations.runtimeClasspath.filter { it.name.endsWith('.jar') }
+    }
+    into "$buildDir/deployment/dev/lib"
+}
+
+
+task copyConfig(type: Copy) {
+    description = "Copy properties files to deployment and replace tokens (version, buildTimestamp)"
+    from('src/main/resources') {
+        include '*.properties'
+        filter(org.apache.tools.ant.filters.ReplaceTokens, 
+               tokens: [
+                   version: (project.hasProperty('version') ? project.version : 'unspecified'),
+                   buildTimestamp: new Date().format("yyyy-MM-dd'T'HH:mm:ss")
+               ])
+    }
+    into "$buildDir/deployment/dev"
+}
+
+
+task deployToDev {
+    description = "Prepare a dev deployment: clean -> artifact -> runtime libs -> configs (with token replacement)"
+
+    dependsOn cleanDeploy, copyArtifact, copyRuntimeDeps, copyConfig
+
+
+    copyArtifact.mustRunAfter cleanDeploy
+    copyRuntimeDeps.mustRunAfter copyArtifact
+    copyConfig.mustRunAfter copyRuntimeDeps
+
+    doLast {
+        println "Deployment prepared at: ${buildDir}/deployment/dev"
+    }
+}
+```
 
 
 
