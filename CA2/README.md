@@ -158,3 +158,248 @@ Nesta parte, foi dado um commit com tag ca2-part1, tal como se demonstra no cód
     git tag ca2-part1
     git push origin main ca2-part1
    ````
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Alternative Solution — Apache Maven
+
+## Introduction
+
+As an alternative to Gradle, this section presents **Apache Maven** — one of the most widely used Java build automation tools.  
+While Gradle is known for its flexibility and performance, Maven provides a **declarative, XML-based approach** focused on convention and standardization.  
+
+The following analysis compares both tools and describes how Maven could be used to accomplish the same tasks developed in Part 1 of this assignment.
+
+---
+
+## Comparison Between Gradle and Maven
+
+| Feature | Gradle | Maven |
+|----------|---------|--------|
+| **Build Script Language** | Uses a **Groovy or Kotlin DSL**, which allows scripting logic directly in the build file. | Uses **XML (POM)** — more verbose but highly structured and standardized. |
+| **Configuration Approach** | **Imperative and declarative** — combines logic with configuration. | **Fully declarative** — describes what to build, not how to build it. |
+| **Performance** | Uses an incremental build system and build cache, leading to faster builds. | Slower for large projects since each goal executes independently. |
+| **Dependency Management** | Flexible; supports dynamic versions and custom repositories. | Stable; uses a central repository system with strong version management. |
+| **Extensibility** | Easy to create **custom tasks** in Groovy/Kotlin. | Extended via **plugins**, which are well-documented but less flexible. |
+| **Learning Curve** | Slightly higher due to its scripting flexibility. | Easier for beginners due to its declarative structure. |
+| **IDE Support** | Excellent in IntelliJ, Eclipse, and VS Code. | Equally strong across all major IDEs. |
+| **Wrapper Tool** | `gradlew` script ensures consistent Gradle version across environments. | Uses `mvnw` wrapper script for the same purpose. |
+
+---
+
+## How Maven Could Achieve the Same Goals (Design)
+
+To replicate the Gradle tasks created in Part 1, Maven would use its **plugin-based structure** with configuration blocks defined inside the `pom.xml` file.  
+Below is a conceptual design showing how each Gradle feature could be achieved with Maven.
+
+---
+
+
+This section presents a practical Maven project that replicates the same automation tasks implemented in Gradle Part 1, including:
+
+- Running the server (`mvn run-server`)
+- Running unit tests (`mvn test`)
+- Creating a backup of the source files (`mvn backup`)
+- Zipping the backup (`mvn zip-backup`)
+- Managing the Java version (JDK 17 via Maven Toolchains)
+
+All configuration is done using **Maven plugins**, with each task linked to a custom goal that can be executed directly from the command line.
+
+---
+
+## 1. Creating the Maven Project
+
+To initialize the project:
+```bash
+mvn archetype:generate -DgroupId=basic_demo -DartifactId=gradle_basic_demo_maven -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+cd gradle_basic_demo_maven
+```
+---
+
+## 2. Running the Server
+
+In Gradle, a custom `runServer` task was created.  
+In Maven, this can be done using the **Exec Plugin**:
+
+```xml
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>exec-maven-plugin</artifactId>
+    <version>3.1.0</version>
+    <executions>
+        <execution>
+            <id>run-server</id>
+            <phase>none</phase>
+            <goals>
+                <goal>java</goal>
+            </goals>
+            <configuration>
+                <mainClass>basic_demo.ChatServerApp</mainClass>
+                <arguments>
+                    <argument>59001</argument>
+                </arguments>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+Execution command:
+
+```cmd
+mvn exec:java@run-server
+```
+
+### 2. Adding a Unit Test
+
+
+Maven natively supports testing through the Surefire Plugin, which automatically runs JUnit tests located under src/test/java:
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <version>3.2.5</version>
+</plugin>
+```
+
+Command:
+```
+mvn test
+```
+
+## 3. Backup of Source Files
+Maven can use the Antrun Plugin to perform file operations such as copying files to a backup directory:
+
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <version>3.1.0</version>
+    <executions>
+        <execution>
+            <id>backup</id>
+            <phase>none</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+                <target name="backup">
+                    <echo message="Creating source backup..." />
+                    <mkdir dir="backup/src"/>
+                    <copy todir="backup/src">
+                        <fileset dir="src/main/java"/>
+                    </copy>
+                    <echo message="Backup completed successfully." />
+                </target>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+command:
+
+```xml
+mvn antrun:run@backup
+```
+
+### 4. Creating a ZIP Backup
+
+Maven supports packaging archives through the Assembly Plugin.
+This can generate a .zip file containing the backup folder:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-assembly-plugin</artifactId>
+    <version>3.7.1</version>
+    <executions>
+        <execution>
+            <id>zip-backup</id>
+            <phase>none</phase>
+            <goals>
+                <goal>single</goal>
+            </goals>
+            <configuration>
+                <descriptors>
+                    <descriptor>src/assembly/backup.xml</descriptor>
+                </descriptors>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+src/assembly/backup.xml descriptor:
+
+```xml
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3
+                               https://maven.apache.org/xsd/assembly-1.1.3.xsd">
+  <id>backup</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <fileSets>
+    <fileSet>
+      <directory>backup/src</directory>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>
+
+```
+
+command:
+```xml
+mvn assembly:single@zip-backup
+```
+
+
+### 5. Managing Java Versions
+
+Maven ensures JDK consistency through the Toolchains Plugin, similar to Gradle’s JDK Toolchain:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-toolchains-plugin</artifactId>
+    <version>3.2.0</version>
+    <configuration>
+        <toolchains>
+            <jdk>
+                <version>17</version>
+                <vendor>temurin</vendor>
+            </jdk>
+        </toolchains>
+    </configuration>
+</plugin>
+```
+
+
+| Aspect            | Gradle                          | Maven                          |
+| ----------------- | ------------------------------- | ------------------------------ |
+| Build Logic       | Scripted with Groovy/Kotlin     | Declarative XML configuration  |
+| Custom Tasks      | Simple and flexible             | Implemented via Plugins        |
+| Build Performance | Faster due to caching           | Slower but highly stable       |
+| Plugin Ecosystem  | Growing and modern              | Mature and extensive           |
+| Toolchain Support | Built-in                        | Through Toolchains Plugin      |
+| Ideal Use Case    | Modern, multi-language projects | Large enterprise Java projects |
+
+
+## Conclusion
+
+Apache Maven provides a stable and structured alternative to Gradle, focusing on simplicity, conventions, and plugin-based extensibility.
+Although it lacks the flexibility and performance optimizations of Gradle, Maven remains a powerful choice for projects where standardization and maintainability are prioritized.
