@@ -106,49 +106,38 @@ The following image illustrates the command ./gradlew zipBackup and its purpose:
 ![alt text](<executeziptask.png>)
 
 
-## Explicação sobre Gradle Wrapper e JDK Toolchain
+## Explanation of Gradle Wrapper and JDK Toolchain
 
-O gradle wrapper é um pequeno script contido no projeto que garante que todos os utilizadores e sistemas operativos utilizam a mesma versão do gradle sem que haja a necessidade de existir a instalação manual. O ficheiro *gradle-wrapper.properties* contém no campo *distributionUrl* a hiperligação da versão especifica do gradle usada no projeto. 
-Quando executado o comando **./gradlew build**, o gradle verifica se a versão indicada no *wrapper.properties* já está descarregada em *~/.gradle/wrapper/dists/*, sendo que caso não esteja, é realizado o download automático.
-
-O Java Toolchain, por outro lado, é uma funcionalidade moderna do gradle que garante que o build usa a versão correta do JDK, mesmo tendo a máquina outras versões instaladas.
-Neste projeto têm-se o seguinte código dentro do ficheiro *build.gradle*:
-
+The Gradle wrapper is a small script contained in the project that ensures that all users and operating systems use the same version of Gradle without the need for manual installation. The *gradle-wrapper.properties* file contains the link to the specific version of Gradle used in the project in the *distributionUrl* field.
+ 
+When the command **./gradlew build** is executed, Gradle checks whether the version indicated in *wrapper.properties* has already been downloaded to *~/.gradle/wrapper/dists/*. If it has not, it is downloaded automatically.
+The Java Toolchain, on the other hand, is a modern feature of Gradle that ensures that the build uses the correct version of the JDK, even if other versions are installed on the machine.
+In this project, the following code is contained in the *build.gradle* file:
 ```java
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
 ```
-Esse código, nada mais é do que o próprio gradle a dar a conhecer que utiliza a versão 17 do Java para compilar e executar este projeto.
-
-Ao executar o comando **./gradlew -q javaToolchain**, o gradle mostra o seguinte output:
-
+This code is nothing more than Gradle itself letting you know that it uses Java version 17 to compile and run this project.
+When you run the command **./gradlew -q javaToolchain**, Gradle shows the following output:
 ![alt text](<outputgradlewjdktoolchain.png>)
+In the first part of the output, Gradle presents two options:
+- *Auto-detection: Enabled* -> which means that Gradle is configured to automatically detect the JDK versions that exist on the machine.
+- *Auto-download: Enabled* -> which means that if Gradle cannot find a JDK version compatible with what is defined in the toolchain, Gradle automatically downloads the correct version without the user having to install it manually.
 
-Na primeira parte do output, o gradle apresenta duas opções:
-- *Auto-detection: Enabled* -> o que significa que o gradle está configurado para detetar automaticamente as versões do JDK que existem na máquina.
-- *Auto-download: Enabled* -> o que significa que caso não seja possivel o gradle encontrar uma versão de JDK compatível com o que está definido na toolchain, o gradle faz o download automático da versão correta, sem que o utilizador precise de instalar manualmente.
+The second part of the output shows the JDK version that Gradle is using to compile and execute the project. And the following attributes are listed:
+- The name Eclipse Temurin, which identifies the JDK distribution. Previously, version 17 was defined in the *build.gradle* file, and what happens is that Gradle automatically downloads this *Eclipse Temurin* distribution, which is based on JDK version 17.
+- The *Location* field, which shows the path where Gradle automatically downloaded and installed the JDK within the */.gradle/jdks* folder itself.
+- The *Language Version* field, which indicates the version of the Java language used to compile the code.
+- The *Vendor* field, which shows the supplier of the JDK distribution.
+- The *Architecture* field, which indicates that the JDK is for use on 64-bit systems.
+- The *Is JDK* field, which displays a Boolean value of *true*, confirming that this package is indeed a JDK.
+- Finally, the *Detected by* field, which simply indicates that Gradle automatically installed the JDK.
 
 
-Na segunda parte do output é apresentada a versão do JDK que o gradle está a usar para compilar e executar o projeto. E, constam-se os seguintes atributos:
-
-- O nome Eclipse Temurin que identifica a distribuição do JDK. Anteriormente, defeniu-se a versão 17 no ficheiro *build.gradle*, e o que ocorre é que o gradle faz o download automático dessa distribuição *Eclipse Temurin* que tem por base a versão 17 de JDK.
-
-- O campo *Location* que mostra o caminho no qual o gradle descarregou e instalou automaticamente o JDK dentro da própria pasta */.gradle/jdks*. 
-
-- O campo *Language Version* que indica a versão da linguagem Java usada para compilar o código.
-
-- O campo *Vendor* que demonstra qual é o fornecedor da distribuição do JDK.
-
-- O campo *Architecture* que indica que o JDK é para ser utilizado em sistemas 64 bits.
-
-- O campo *Is JDK* que apresenta um valor booleano *true* onde com isso, confirma-se que este pacote é de facto um JDK.
-
-- Por último, o campo *Detected by*, muito sucintamente, o que transmite é que o gradle instalou automaticamente o JDK.
-
-Antes de finalizar esta explicação, é de notar que o sistema operativo no qual foi instalado o gradle foi o Ubuntu e, como se pode ver na imagem logo acima deste texto, a versão do JDK no sistema operativo é a 21, e o gradle acabou por ser inteligente, e tendo por base o que foi escrito no ficheiro *build.gradle*, o próprio acabou por instalar a versão apropriada. Assim sendo, a utilidade na frase anteriormente apresentada é o reflexo do que torna o gradle toolchain tão benéfico. 
-
+Before concluding this explanation, it should be noted that the operating system on which Gradle was installed was Ubuntu and, as can be seen in the image above this text, the JDK version on the operating system is 21, and Gradle ended up being intelligent, and based on what was written in the *build.gradle* file, it ended up installing the appropriate version itself. Therefore, the usefulness in the previous sentence reflects what makes the Gradle toolchain so beneficial.
+ 
 
 ## Mark commit Tag ca2-part1
 
