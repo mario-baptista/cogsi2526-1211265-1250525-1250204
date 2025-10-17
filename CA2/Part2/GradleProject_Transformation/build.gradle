@@ -79,3 +79,87 @@ task deployToDev {
         println "Deployment prepared at: ${buildDir}/deployment/dev"
     }
 }
+
+
+// runServer Task
+task runServer(type: JavaExec, dependsOn: classes) {
+    group = "DevOps"
+    description = "Launches a chat/server application (default port 59001)"
+  
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'basic_demo.ChatServerApp' // Change if main class is different
+
+    args '59001'
+}
+
+// Unit test configuration (enables JUnit 5 test output)
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+// backup Task
+task backup(type: Copy) {
+    group = "DevOps"
+    description = "Backs up source files to the backup directory"
+  
+    from 'src'
+    into 'backup/src'
+    include '**/*.java'
+}
+
+// zipBackup Task
+tasks.register('zipBackup', Zip) {
+    dependsOn tasks.named('backup')
+    from 'backup/src'
+    archiveFileName = "app-backup.zip"
+    destinationDirectory = file("backup/zips")
+}
+
+// javadocZip Task 
+tasks.register('javadocZip', Zip) {
+    dependsOn tasks.named('javadoc')
+    group = 'DevOps'
+    description = 'Generate javadoc and zip the documentation'
+
+    from tasks.named('javadoc').map { it.destinationDir }
+    archiveFileName = 'javadoc.zip'
+    destinationDirectory = file("$buildDir/docs")
+}
+
+// Integration Test Source Set and Task
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/integrationTest/java'
+        }
+        resources {
+            srcDir 'src/integrationTest/resources'
+        }
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+task integrationTest(type: Test) {
+    description = 'Runs integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+    useJUnitPlatform()
+}
+
+// Make Gradle’s built-in “check” task run integration tests too
+check.dependsOn integrationTest
+
+// Java Toolchain (Java 17 use)
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
