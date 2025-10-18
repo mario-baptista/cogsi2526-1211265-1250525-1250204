@@ -150,6 +150,66 @@ At this stage, a commit was made with the tag ca2-part1, as shown below:
     git push origin main ca2-part1
    ```
 
+# CA2 - Part 2
+
+## Realisation Git Clone of Tut-Rest API Repository
+
+```bash
+git clone https://github.com/spring-guides/tut-rest.git
+```
+
+## Move to the links folder and execute the application 
+
+   ```bash
+    cd tut-rest
+    cd links
+    ../mvnw spring-boot:run
+   ```
+   ![alt text](executeapp.png)
+
+## Replace the content of the src folder with the content of the links folder from the Building REST services with Spring application
+
+   ```bash
+    rm -rf src/*
+    cp -r ../tut-rest/links/src/* src/
+   ```
+
+## Add the necessary dependencies and plugins to the *build.gradle* file
+
+```gradle
+plugins {
+    id 'org.springframework.boot' version '3.3.2'
+    id 'io.spring.dependency-management' version '1.1.5'
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-hateoas'
+    runtimeOnly 'com.h2database:h2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+bootJar {
+    mainClass = 'payroll.PayrollApplication'
+}
+```
+
+## Execute bootRun
+
+```bash
+./gradlew bootRun
+```
+
+![alt text](<bootrun.png>)
+
+![alt text](<test.png>)
+
 ## Create a task named deployToDev
 
 To create the task deployToDev we created multiple smaller tasks with each of the required behaviours. 
@@ -209,15 +269,6 @@ task deployToDev {
     }
 }
 ```
-
-
-
-
-
-
-
-
-
 
 
 # Alternative Solution — Apache Maven
