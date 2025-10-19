@@ -270,6 +270,38 @@ task deployToDev {
 }
 ```
 
+## Generate Javadoc documentation and compress it into a ZIP file
+
+```gradle
+// javadocZip Task 
+tasks.register('javadocZip', Zip) {
+    dependsOn tasks.named('javadoc')
+    group = 'DevOps'
+    description = 'Generate javadoc and zip the documentation'
+
+    from tasks.named('javadoc').map { it.destinationDir }
+    archiveFileName = 'javadoc.zip'
+    destinationDirectory = file("$buildDir/docs")
+}
+```
+
+## Integration Test Configuration
+
+![alt text](image.png)
+
+![alt text](image-1.png)
+
+Adds a separate integration test source set so I can keep those tests separate from my unittests
+
+Integration tests live under `src/integrationTest/java`
+
+## Java Toolchain
+
+This project is configured to use Java 17 via Gradle's Toolchain fature
+
+![alt text](image-2.png)
+
+This makes sure the project always runs with the right Java version, no matter what's installed locally.
 
 # Alternative Solution — Apache Maven
 
