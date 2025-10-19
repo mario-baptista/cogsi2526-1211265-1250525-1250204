@@ -280,7 +280,7 @@ task runInstalledApp {
 
     doLast {
         // Figure out correct script based on OS
-        def scriptName = "GradleProject_Transformation" // replace with your project folder name if different
+        def scriptName = "GradleProject_Transformation" 
         def scriptExt = System.getProperty('os.name').toLowerCase().contains('win') ? '.bat' : ''
         def scriptPath = "$buildDir/install/${scriptName}/bin/${scriptName}${scriptExt}"
 
