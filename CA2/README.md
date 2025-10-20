@@ -620,7 +620,7 @@ cp -r ../../tut-rest/src/* src/main
 ## 8. Run Application in Maven
 
 ```bash
-mvn spring-boot:run
+../mvnw spring-boot:run
 ```
 
 ![alt text](image-3.png)
