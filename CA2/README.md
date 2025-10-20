@@ -551,6 +551,186 @@ Maven ensures JDK consistency through the Toolchains Plugin, similar to Gradleâ€
 ```
 
 
+## 6. Copy the Spring project code
+ 
+```bash
+cp -r ../../tut-rest/src/* src/main
+```
+
+## 7. Configure pom.xml with all dependencies
+
+```xml
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+     http://maven.apache.org/xsd/maven-4.0.0.xsd">
+     
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example</groupId>
+    <artifactId>payroll</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.1</version>
+        <relativePath/> 
+    </parent>
+
+    <dependencies>
+        <!-- Spring Boot Starter Web -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- H2 Database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+```
+
+## 8. Run Application in Maven
+
+```bash
+mvn spring-boot:run
+```
+
+![alt text](image-3.png)
+
+## 9. Configure deployToDev task in pom.xml file
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <version>3.1.0</version>
+    <executions>
+        <execution>
+            <id>deploy-to-dev</id>
+            <phase>package</phase>
+            <configuration>
+                <target>
+                    <!-- Clean deployment directory -->
+                    <delete dir="${project.build.directory}/deployment/dev"/>
+                    
+                    <!-- Copy main artifact -->
+                    <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                          todir="${project.build.directory}/deployment/dev"/>
+
+                    <!-- Copy runtime dependencies -->
+                    <copy todir="${project.build.directory}/deployment/dev/lib">
+                        <fileset dir="${project.build.directory}/dependency" includes="*.jar"/>
+                    </copy>
+
+                    <!-- Copy and filter config files -->
+                    <copy todir="${project.build.directory}/deployment/dev" filtering="true">
+                        <fileset dir="src/main/resources" includes="*.properties"/>
+                        <filterset>
+                            <filter token="build.timestamp" value="${maven.build.timestamp}"/>
+                            <filter token="project.version" value="${project.version}"/>
+                        </filterset>
+                    </copy>
+                </target>
+            </configuration>
+            <goals>
+                <goal>run</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+```
+
+## 10. Run the application via distribution scripts (installDist equivalent)
+
+```xml
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>exec-maven-plugin</artifactId>
+    <version>3.1.0</version>
+    <executions>
+        <execution>
+            <id>run-app</id>
+            <phase>package</phase>
+            <goals>
+                <goal>exec</goal>
+            </goals>
+            <configuration>
+                <executable>java</executable>
+                <arguments>
+                    <argument>-jar</argument>
+                    <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
+                </arguments>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+## 12. Create integration tests folder
+
+```bash
+cd ~/cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll/src
+mkdir -p integration-test/java/payroll
+```
+
+## 13. Create one integration test class
+
+```bash
+nano TestExampleIT.java
+```
+### Java code - Test Example
+```java
+package payroll;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class TestExampleIT {
+    @Test
+    void integrationTest() {
+        assertTrue(true);
+    }
+}
+```
+
+## 14. Test result in *payroll folder* with command:
+
+```bash
+mvn test
+```
+
+![alt text](image-4.png)
+
+## Basics Differences between Maven and Gradle.
+
 | Aspect            | Gradle                          | Maven                          |
 | ----------------- | ------------------------------- | ------------------------------ |
 | Build Logic       | Scripted with Groovy/Kotlin     | Declarative XML configuration  |
