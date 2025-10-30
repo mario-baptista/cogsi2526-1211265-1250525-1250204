@@ -260,3 +260,26 @@ As shown in the image above on the left side, a popup appears for the user to en
 In the simple chat application, the name *joaoaraujo* was entered as the screen name, and immediately afterwards, on the vagrant machine, the server gave an alert saying that a user had just entered.
 
 ![alt text](image-6.png)
+
+### Automating Cloning, Building, and Starting Applications
+
+To automate the process of cloning repositories, building applications, and starting services, use the `automate_apps.sh` script with environment variables.
+
+1. **Set Environment Variables**: Control which steps run by setting boolean flags (`true` or `false`). Defaults are `false`.
+   - `CLONE_REPOS=true`: Clone Spring PetClinic, Payroll (tut-rest), and Gradle Basic Demo repos.
+   - `BUILD_APPS=true`: Build the applications using Maven/Gradle.
+   - `START_SERVICES=true`: Start services in the background (PetClinic and Payroll on port 8080, Chat Server on port 5000).
+
+2. **Run the Automation Script**:
+   - After `vagrant ssh`, navigate to the Part1 folder: `cd cogsi2526-1211265-1250525-1250204/CA3/Part1`
+   - Execute with vars: `CLONE_REPOS=true BUILD_APPS=true START_SERVICES=true ./automate_apps.sh`
+   - Or integrate into Vagrantfile provisioning (see Vagrantfile updates above).
+
+3. **Verify**:
+   - Check processes: `ps aux | grep java` or `ps aux | grep gradle`.
+   - Access services: `http://192.168.56.10:8080` for APIs, connect chat client to `192.168.56.10:5000`.
+   - Logs: Check terminal output or app logs for errors.
+
+4. **Customization**: Modify `automate_apps.sh` for additional apps or repo URLs. Ensure ports don't conflict.
+
+This automation reduces manual steps, making the Vagrant environment more reproducible.
