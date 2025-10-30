@@ -283,3 +283,13 @@ To automate the process of cloning repositories, building applications, and star
 4. **Customization**: Modify `automate_apps.sh` for additional apps or repo URLs. Ensure ports don't conflict.
 
 This automation reduces manual steps, making the Vagrant environment more reproducible.
+
+To test that the applications are running on the server, we changed the build.gradle on `gradle_basic_demo` to use the server IP address instead of `localhost`:
+
+![alt text](image-9.png)
+
+![alt text](image-7.png)
+
+And we can also use the browser to check the REST application:
+
+![alt text](image-8.png)

@@ -24,40 +24,30 @@ if [ "$CLONE_REPOS" = "true" ]; then
     git clone https://github.com/mario-baptista/cogsi2526-1211265-1250525-1250204.git || echo "Main repo already exists"
     cd $BASE_DIR
     echo "Copying application repositories from main repo..."
-    rm -rf ./spring-petclinic
-    cp -r ../../CA1/spring-framework-petclinic ./spring-petclinic
-    rm -rf ./payroll_app
-    cp -r ../../CA2/AlternativeSolutionP1P2CA2/payroll ./payroll_app
     rm -rf ./gradle_basic_demo
     cp -r ../../CA2/Part1/gradle_basic_demo ./gradle_basic_demo
+    rm -rf ./gradle_transformation
+    cp -r ../../CA2/Part2/GradleProject_Transformation ./gradle_transformation
 fi
 
 # Step 2: Build applications if enabled
 if [ "$BUILD_APPS" = "true" ]; then
     cd $BASE_DIR
     echo "Building applications..."
-    
-    # Build Spring PetClinic
-    if [ -d "spring-petclinic" ]; then
-        cd spring-petclinic
-        sudo chmod +x mvnw
-        ./mvnw clean install -DskipTests  # Skip tests for speed
-        cd ..
-    fi
-
-    # Build Payroll
-    #if [ -d "payroll_app" ]; then
-    #    cd payroll_app
-    #    sudo chmod +x mvnw
-    #    ./mvnw clean install -DskipTests
-    #    cd ..
-    #fi
 
     # Build Gradle Basic Demo
     if [ -d "gradle_basic_demo" ]; then
         cd gradle_basic_demo
-        #sudo chmod +x gradlew
-        gradlew build
+        chmod +x gradlew
+        ./gradlew build
+        cd ..
+    fi
+
+    # Build Gradle Transformation
+    if [ -d "gradle_transformation" ]; then
+        cd gradle_transformation
+        chmod +x gradlew
+        ./gradlew build
         cd ..
     fi
 fi
@@ -66,32 +56,24 @@ fi
 if [ "$START_SERVICES" = "true" ]; then
     cd $BASE_DIR
     echo "Starting services..."
-    
-    # Start Spring PetClinic in background
-    if [ -d "spring-petclinic" ]; then
-        cd spring-petclinic
-        sudo chmod +x mvnw
-        ./mvnw spring-boot:run &
-        cd ..
-    fi
 
-    # Start Payroll in background
-    #if [ -d "payroll_app" ]; then
-    #    cd payroll_app
-    #    sudo chmod +x mvnw
-    #    ./mvnw spring-boot:run &
-    #    cd ..
-    #fi
-
-    # Start Gradle Chat Server in background
+    # Start Gradle Basic Demo Chat Server in background
     if [ -d "gradle_basic_demo" ]; then
         cd gradle_basic_demo
-        sudo chmod +x gradlew
-        gradlew runServer &
+        chmod +x gradlew
+        ./gradlew runServer &
         cd ..
     fi
-    
-    echo "Services started. Access via forwarded ports (8080 for APIs, 5000 for chat)."
+
+    # Start Gradle Transformation Chat Server in background
+    if [ -d "gradle_transformation" ]; then
+        cd gradle_transformation
+        chmod +x gradlew
+        ./gradlew bootRun &
+        cd ..
+    fi
+
+    echo "Services started. Access via forwarded ports (5000 for basic demo chat, 59001 for transformation chat)."
 fi
 
 echo "Automation script completed."

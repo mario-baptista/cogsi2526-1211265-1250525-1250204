@@ -67,7 +67,7 @@ task runClient(type:JavaExec, dependsOn: classes){
 
     mainClass = 'basic_demo.ChatClientApp'
 
-    args 'localhost', '59001'
+    args '192.168.33.10', '59001'
 }
 
 task backup(type: Copy) {
