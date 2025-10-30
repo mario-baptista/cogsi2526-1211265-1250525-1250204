@@ -15,68 +15,79 @@ echo "CLONE_REPOS: $CLONE_REPOS"
 echo "BUILD_APPS: $BUILD_APPS"
 echo "START_SERVICES: $START_SERVICES"
 
+BASE_DIR=/home/vagrant/cogsi2526-1211265-1250525-1250204/CA3/Part1
+
 # Step 1: Clone repositories if enabled
 if [ "$CLONE_REPOS" = "true" ]; then
-    echo "Cloning/copying repositories..."
-    git clone https://github.com/spring-projects/spring-petclinic.git || echo "Spring PetClinic already exists"
-    # Copy payroll from local repo (assuming main repo is cloned)
-    if [ -d "../cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll" ]; then
-        cp -r ../cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll ./payroll_app || echo "Payroll app already exists"
-    else
-        echo "Payroll app not found in local repo, cloning tut-rest as base"
-        git clone https://github.com/spring-guides/tut-rest.git payroll_app || echo "Payroll app (tut-rest) already exists"
-    fi
-    git clone https://github.com/lmpnogueira/gradle_basic_demo.git || echo "Gradle Basic Demo already exists"
+    echo "Cloning main repository..."
+    cd /home/vagrant
+    git clone https://github.com/mario-baptista/cogsi2526-1211265-1250525-1250204.git || echo "Main repo already exists"
+    cd $BASE_DIR
+    echo "Copying application repositories from main repo..."
+    rm -rf ./spring-petclinic
+    cp -r ../../CA1/spring-framework-petclinic ./spring-petclinic
+    rm -rf ./payroll_app
+    cp -r ../../CA2/AlternativeSolutionP1P2CA2/payroll ./payroll_app
+    rm -rf ./gradle_basic_demo
+    cp -r ../../CA2/Part1/gradle_basic_demo ./gradle_basic_demo
 fi
 
 # Step 2: Build applications if enabled
 if [ "$BUILD_APPS" = "true" ]; then
+    cd $BASE_DIR
     echo "Building applications..."
     
     # Build Spring PetClinic
     if [ -d "spring-petclinic" ]; then
         cd spring-petclinic
+        sudo chmod +x mvnw
         ./mvnw clean install -DskipTests  # Skip tests for speed
         cd ..
     fi
-    
-    # Build Payroll (assuming tut-rest is the base)
-    if [ -d "payroll_app" ]; then
-        cd payroll_app
-        ./mvnw clean install -DskipTests
-        cd ..
-    fi
-    
+
+    # Build Payroll
+    #if [ -d "payroll_app" ]; then
+    #    cd payroll_app
+    #    sudo chmod +x mvnw
+    #    ./mvnw clean install -DskipTests
+    #    cd ..
+    #fi
+
     # Build Gradle Basic Demo
     if [ -d "gradle_basic_demo" ]; then
         cd gradle_basic_demo
-        gradle build
+        #sudo chmod +x gradlew
+        gradlew build
         cd ..
     fi
 fi
 
 # Step 3: Start services if enabled
 if [ "$START_SERVICES" = "true" ]; then
+    cd $BASE_DIR
     echo "Starting services..."
     
     # Start Spring PetClinic in background
     if [ -d "spring-petclinic" ]; then
         cd spring-petclinic
+        sudo chmod +x mvnw
         ./mvnw spring-boot:run &
         cd ..
     fi
-    
+
     # Start Payroll in background
-    if [ -d "payroll_app" ]; then
-        cd payroll_app
-        ./mvnw spring-boot:run &
-        cd ..
-    fi
-    
+    #if [ -d "payroll_app" ]; then
+    #    cd payroll_app
+    #    sudo chmod +x mvnw
+    #    ./mvnw spring-boot:run &
+    #    cd ..
+    #fi
+
     # Start Gradle Chat Server in background
     if [ -d "gradle_basic_demo" ]; then
         cd gradle_basic_demo
-        gradle runServer &
+        sudo chmod +x gradlew
+        gradlew runServer &
         cd ..
     fi
     
