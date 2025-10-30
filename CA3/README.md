@@ -44,17 +44,26 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "vagrant-machine"
 
   # Private network to access applications on the host  
-  config.vm.network "private_network", ip: "192.168.56.10"
+  config.vm.network "forwarded_port", guest: 8080, host: 8080  # Spring REST
+  config.vm.network "forwarded_port", guest: 5000, host: 5000  # Gradle
 
-  # Provisioning: install Git, JDK, Maven, Gradle
-  config.vm.provision "shell", inline: <<-SHELL
-    apt-get update
-    apt-get install -y git openjdk-17-jdk maven unzip curl
-    # Install Gradle
-    wget https://services.gradle.org/distributions/gradle-8.3-bin.zip -P /tmp
-    unzip -d /opt/gradle /tmp/gradle-8.3-bin.zip
-    echo "export PATH=\$PATH:/opt/gradle/gradle-8.3/bin" >> /etc/profile
-  SHELL
+  config.vm.synced_folder ".", "/home/vagrant/"
+
+  config.vm.provision "shell", path: "provision.sh"
+
+  if ENV['VAGRANT_PROVIDER'] == 'virtualbox'
+  config.vm.provider :virtualbox do |vb|
+  vb.memory = "1024"
+  vb.cpus = 2
+  end
+  elsif ENV['VAGRANT_PROVIDER'] == 'vmware_desktop'
+  config.vm.provider :vmware_desktop do |vmware|
+  vmware.memory = "2048"
+  vmware.cpus = 4
+  end
+  else
+  config.vm.provider :virtualbox
+  end
 end
 ```
 

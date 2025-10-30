@@ -33,7 +33,7 @@
                             <goal>java</goal>
                         </goals>
                         <configuration>
-                            <mainClass>basic_demo.ChatServerApp</mainClass>
+                            <mainClass>payroll.PayrollApplication</mainClass>
                             <arguments>
                                 <argument>59001</argument>
                             </arguments>
