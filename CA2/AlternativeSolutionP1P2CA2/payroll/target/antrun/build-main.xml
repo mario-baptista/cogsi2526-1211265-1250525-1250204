@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <delete dir="/home/joaop/cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll/target/deployment/dev" />
+    <copy file="/home/joaop/cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll/target/payroll-1.0.0.jar" todir="/home/joaop/cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll/target/deployment/dev" />
+    <copy todir="/home/joaop/cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll/target/deployment/dev/lib">
+      <fileset includes="*.jar" dir="/home/joaop/cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll/target/dependency" />
+    </copy>
+    <copy todir="/home/joaop/cogsi2526-1211265-1250525-1250204/CA2/AlternativeSolutionP1P2CA2/payroll/target/deployment/dev" filtering="true">
+      <fileset includes="*.properties" dir="src/main/resources" />
+      <filterset>
+        <filter value="2025-10-20T02:44:30Z" token="build.timestamp" />
+        <filter value="1.0.0" token="project.version" />
+      </filterset>
+    </copy>
+  </target>
+</project>
