@@ -92,6 +92,13 @@ if [ "$START_SERVICES" = "true" ]; then
     echo "Starting services..."
 
     if [ "$VM_TYPE" = "app" ]; then
+        # Wait for H2 server to be ready
+        echo "Waiting for H2 database server to be ready..."
+        while ! nc -z 192.168.33.12 9092; do
+            sleep 2
+        done
+        echo "H2 server is ready."
+
         # Start Gradle Transformation in background
         if [ -d "gradle_transformation" ]; then
             cd gradle_transformation
@@ -104,7 +111,7 @@ if [ "$START_SERVICES" = "true" ]; then
         # Start H2 server in background
         SYNC_DIR="/vagrant"
         H2_DATA_DIR="$SYNC_DIR/h2-data"
-        java -cp /usr/local/bin/h2.jar org.h2.tools.Server -tcp -tcpPort 9092 -baseDir "$H2_DATA_DIR" &
+        java -cp /usr/local/bin/h2.jar org.h2.tools.Server -tcp -tcpPort 9092 -tcpAllowOthers -ifNotExists -baseDir "$H2_DATA_DIR" &
         echo "H2 database server started on port 9092."
     fi
 fi
