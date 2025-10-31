@@ -26,9 +26,46 @@ if [ "$CLONE_REPOS" = "true" ]; then
     echo "Copying application repositories from main repo..."
     rm -rf ./gradle_basic_demo
     cp -r ../../CA2/Part1/gradle_basic_demo ./gradle_basic_demo
-    rm -rf ./gradle_transformation
-    cp -r ../../CA2/Part2/GradleProject_Transformation ./gradle_transformation
-fi
+     rm -rf ./gradle_transformation
+     cp -r ../../CA2/Part2/GradleProject_Transformation ./gradle_transformation
+
+     # Configure persistent H2 database for gradle_transformation
+     SYNC_DIR="/vagrant"
+     H2_DATA_DIR="$SYNC_DIR/h2-data"
+     APP_PROPERTIES="$BASE_DIR/gradle_transformation/src/main/resources/application.properties"
+
+     echo "=== Setting up persistent H2 database for gradle_transformation ==="
+     # Create data folder in synced directory
+     sudo mkdir -p "$H2_DATA_DIR"
+     sudo chmod 777 "$H2_DATA_DIR"
+
+     # Configure persistent H2 database
+     echo "Configuring application.properties for persistent H2..."
+     if ! grep -q "spring.datasource.url" "$APP_PROPERTIES"; then
+         cat >> "$APP_PROPERTIES" <<EOF
+
+# =========================================
+# H2 Persistent Database Configuration
+# =========================================
+spring.datasource.url=jdbc:h2:file:$H2_DATA_DIR/h2db;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2
+
+# Hibernate auto DDL update
+spring.jpa.hibernate.ddl-auto=update
+EOF
+     else
+         echo "Database configuration already present in application.properties"
+     fi
+
+     echo "DONE"
+     echo "Persistent H2 database path: $H2_DATA_DIR/h2db.mv.db"
+     echo "H2 console available at: http://localhost:8080/h2"
+ fi
 
 # Step 2: Build applications if enabled
 if [ "$BUILD_APPS" = "true" ]; then

@@ -293,3 +293,43 @@ To test that the applications are running on the server, we changed the build.gr
 And we can also use the browser to check the REST application:
 
 ![alt text](image-8.png)
+
+## H2 Database Persistence Setup for gradle_transformation
+
+This section explains how to configure the H2 database in the VM to retain data across restarts using a synced folder for persistent storage.
+
+### Step-by-Step Tutorial
+
+1. **Modify Vagrantfile for Synced Folder**:
+   - Open `CA3/Part1/Vagrantfile`.
+   - Add the following line after the network configurations:
+     ```
+     config.vm.synced_folder "./h2-data", "/vagrant/h2-data", create: true
+     ```
+   - This creates a synced folder between the host's `./h2-data` directory and the VM's `/vagrant/h2-data`, allowing data persistence.
+
+2. **Update Provisioning Script**:
+   - The `automate_apps.sh` script has been modified to automatically configure H2 persistence when cloning repositories.
+   - After copying `gradle_transformation`, it:
+     - Creates the `/vagrant/h2-data` directory with appropriate permissions.
+     - Appends H2 database configuration to `gradle_transformation/src/main/resources/application.properties` if not already present.
+   - Configuration includes:
+     - Database URL pointing to the synced folder: `jdbc:h2:file:/vagrant/h2-data/h2db;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE`
+     - H2 console enabled at `http://localhost:8080/h2`
+     - JPA settings for automatic DDL updates.
+
+Now, if we create a new employee:
+
+![create new employee](<Screenshot 2025-10-30 at 21.54.05.png>)
+
+![show new employee](<Screenshot 2025-10-30 at 21.54.13.png>)
+
+And restart the application
+
+![restart application](<Screenshot 2025-10-30 at 21.55.00.png>)
+
+The employee is still there
+![Employee still in the database](image-10.png)
+
+Database file on CA3/Part1/h2-data
+![Databse file on CA3/Part1/h2-data](image-11.png)
