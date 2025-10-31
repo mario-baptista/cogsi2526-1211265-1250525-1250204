@@ -24,21 +24,29 @@ cp -r CA2/Part2/GradleProject_Transformation CA3/Part2/gradle_transformation
 
 ### Step 2: Modify Vagrantfile for Two VMs
 
-Edit `CA3/Part2/Vagrantfile` to define two separate VMs: one for the database (started first to ensure availability) and one for the application.
+Edit `CA3/Part2/Vagrantfile` to define two separate VMs: one for the database (started first to ensure availability) and one for the application. Include custom SSH key configuration for secure access.
 
 The updated Vagrantfile looks like this:
 
 ```ruby
-# -*- mode: ruby -*-
-# vi: set ft=ruby :-
 
 Vagrant.configure("2") do |config|
+  config.ssh.private_key_path = "~/.ssh/id_rsa_vagrant"
+  config.ssh.insert_key = true
+
   # DB VM
   config.vm.define "db" do |db|
     db.vm.box = "bento/ubuntu-22.04"
     db.vm.hostname = "db-vm"
     db.vm.network "private_network", ip: "192.168.33.12"
     db.vm.synced_folder "./h2-data", "/vagrant/h2-data", create: true
+
+    # Copy custom SSH public key
+    db.vm.provision "file", source: "~/.ssh/id_rsa_vagrant.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+    db.vm.provision "shell", inline: <<-SHELL
+      chmod 600 /home/vagrant/.ssh/authorized_keys
+      chmod 700 /home/vagrant/.ssh
+    SHELL
 
     # Provision Script
     db.vm.provision "shell", path: "provision.sh"
@@ -61,6 +69,13 @@ Vagrant.configure("2") do |config|
     app.vm.network "forwarded_port", guest: 8080, host: 8080   # for REST API
     app.vm.network "private_network", ip: "192.168.33.11"
 
+    # Copy custom SSH public key
+    app.vm.provision "file", source: "~/.ssh/id_rsa_vagrant.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+    app.vm.provision "shell", inline: <<-SHELL
+      chmod 600 /home/vagrant/.ssh/authorized_keys
+      chmod 700 /home/vagrant/.ssh
+    SHELL
+
     # Provision Script
     app.vm.provision "shell", path: "provision.sh"
 
@@ -78,10 +93,11 @@ end
 ```
 
 Key changes:
+- Custom SSH key configuration: Uses `~/.ssh/id_rsa_vagrant` private key and copies the public key file to VMs without embedding in Vagrantfile.
 - Two VMs defined: "db" (started first) and "app".
 - DB VM has IP 192.168.33.12 and a synced folder for H2 data persistence.
 - App VM has port forwarding for the REST API and IP 192.168.33.11.
-- Each VM runs the provision script and automation script with specific environment variables.
+- Each VM copies the custom SSH public key and runs provision/automation scripts with specific environment variables.
 - Order ensures db VM starts before app VM to avoid timing issues.
 
 ### Step 3: Update Provision Script
@@ -169,8 +185,35 @@ This will start both VMs. The app VM will build and run the gradle_transformatio
 - Check VM status: `vagrant status`
 - SSH into VMs: `vagrant ssh app` or `vagrant ssh db`
 - Access the app: `http://localhost:8080/employees`
-- Monitor logs for "H2 server is ready" and successful app startup.
 
 ![alt text](image.png)
 
+![alt text](image-3.png)
+
 ![alt text](image-2.png)
+
+### Step 7: Implement Custom SSH Keys for Secure Access
+
+To enhance VM security and prevent unauthorized access, replace Vagrant's default insecure SSH keys with custom-generated keys. The keys are securely provisioned without embedding in the Vagrantfile.
+
+#### Step 7.1: Generate Custom SSH Key Pair
+
+Generate a new RSA key pair specifically for Vagrant VMs:
+
+```bash
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_vagrant -N ""
+```
+
+This creates:
+- Private key: `~/.ssh/id_rsa_vagrant`
+- Public key: `~/.ssh/id_rsa_vagrant.pub`
+
+#### Step 7.2: Vagrantfile Configuration
+
+The Vagrantfile is already configured to use custom SSH keys:
+
+- `config.ssh.private_key_path = "~/.ssh/id_rsa_vagrant"`: Specifies the custom private key.
+- `config.ssh.insert_key = true`: Allows initial connection with insecure key, then switches to custom.
+- For each VM, provisions copy the public key file to `/home/vagrant/.ssh/authorized_keys` and set permissions.
+
+This approach avoids storing the key content in the Vagrantfile.
