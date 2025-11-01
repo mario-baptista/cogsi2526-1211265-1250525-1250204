@@ -7,9 +7,9 @@ This repository contains the projects for the course **Configuration and Systems
 - [1211365]: Mário Batista
 - [1250204]: Ana-Cosmina Radu
 
-**Teacher:**: Luis Nogueira  
+**Teacher:** Luis Nogueira  
 
-**Course:** Configuration and Systems Administration
+**Course:** Configuration and Systems Administration |
 Master's Degree in Computer Engineering - Cybersecurity and Systems Administration
 
 ## Index of Works
