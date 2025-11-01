@@ -15,6 +15,9 @@ sudo apt-get install -y maven
 # Install Gradle
 sudo apt-get install -y gradle
 
+sudo apt-get install -y dos2unix
+dos2unix /vagrant/*.sh
+
 # Download and install H2 database
 wget -q https://repo1.maven.org/maven2/com/h2database/h2/2.2.224/h2-2.2.224.jar -O /usr/local/bin/h2.jar
 

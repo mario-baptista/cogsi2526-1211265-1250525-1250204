@@ -7,8 +7,22 @@
 # you're doing.
 
 Vagrant.configure("2") do |config|
-  config.ssh.private_key_path = "~/.ssh/id_rsa_vagrant"
+# === Ensure SSH keys exist ===
+  require 'fileutils'
+  ssh_dir = File.expand_path("~/.ssh")
+  private_key = File.join(ssh_dir, "id_rsa_vagrant")
+  public_key  = "#{private_key}.pub"
+
+  FileUtils.mkdir_p(ssh_dir)
+
+  unless File.exist?(private_key) && File.exist?(public_key)
+    puts "==> SSH key pair not found. Generating new keys at #{private_key}..."
+    system("ssh-keygen -t rsa -b 4096 -f \"#{private_key}\" -N \"\"")
+  end
   config.ssh.insert_key = true
+  
+  config.vm.provision "shell", path: "provision.sh"
+
   # DB VM
   config.vm.define "db" do |db|
     db.vm.box = "bento/ubuntu-22.04"
@@ -17,7 +31,7 @@ Vagrant.configure("2") do |config|
     db.vm.synced_folder "./h2-data", "/vagrant/h2-data", create: true
 
     # Copy custom SSH public key
-    db.vm.provision "file", source: "~/.ssh/id_rsa_vagrant.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+   db.vm.provision "file",  source: File.expand_path("~/.ssh/id_rsa_vagrant.pub"), destination: "/home/vagrant/.ssh/authorized_keys"
     db.vm.provision "shell", inline: <<-SHELL
       chmod 600 /home/vagrant/.ssh/authorized_keys
       chmod 700 /home/vagrant/.ssh
@@ -27,14 +41,18 @@ Vagrant.configure("2") do |config|
     db.vm.provision "shell", path: "provision.sh"
 
     # Automation Script for db
-    db.vm.provision "shell", inline: <<-SHELL
+   db.vm.provision "shell",
+    env: {
+      "VM_TYPE" => "db",
+      "CLONE_REPOS" => "true",
+      "BUILD_APPS" => "false",
+      "START_SERVICES" => "true"
+    },
+    inline: <<-SHELL
       cd /vagrant
-      export VM_TYPE=db
-      export CLONE_REPOS=true
-      export BUILD_APPS=false
-      export START_SERVICES=true
       ./automate_apps.sh
     SHELL
+
   end
 
   # App VM
@@ -45,7 +63,7 @@ Vagrant.configure("2") do |config|
     app.vm.network "private_network", ip: "192.168.33.11"
 
     # Copy custom SSH public key
-    app.vm.provision "file", source: "~/.ssh/id_rsa_vagrant.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+    app.vm.provision "file", source: File.expand_path("~/.ssh/id_rsa_vagrant.pub"), destination: "/home/vagrant/.ssh/authorized_keys"
     app.vm.provision "shell", inline: <<-SHELL
       chmod 600 /home/vagrant/.ssh/authorized_keys
       chmod 700 /home/vagrant/.ssh

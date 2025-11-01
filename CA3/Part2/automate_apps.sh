@@ -107,12 +107,32 @@ if [ "$START_SERVICES" = "true" ]; then
             cd ..
         fi
         echo "App services started. Access via forwarded port 8080."
-    elif [ "$VM_TYPE" = "db" ]; then
-        # Start H2 server in background
-        SYNC_DIR="/vagrant"
-        H2_DATA_DIR="$SYNC_DIR/h2-data"
-        java -cp /usr/local/bin/h2.jar org.h2.tools.Server -tcp -tcpPort 9092 -tcpAllowOthers -ifNotExists -baseDir "$H2_DATA_DIR" &
-        echo "H2 database server started on port 9092."
+    fi  # <-- ESTA LINHA FALTAVA!
+
+    if [ "$VM_TYPE" = "db" ]; then
+      echo "Configuring firewall (ufw) to secure the H2 database..."
+
+      # Install UFW if it is not already installed
+      sudo apt-get update -y
+      sudo apt-get install -y ufw
+
+      # Set secure default policies
+      sudo ufw default deny incoming
+      sudo ufw default allow outgoing
+
+      # Allow SSH (remote access)
+      sudo ufw allow 22/tcp
+
+      # Allow only the app VM (192.168.33.11) to access the H2 port
+      sudo ufw allow from 192.168.33.11 to any port 9092 proto tcp
+
+      echo "y" | sudo ufw enable
+
+      # Start H2 server in background
+      SYNC_DIR="/vagrant"
+      H2_DATA_DIR="$SYNC_DIR/h2-data"
+      java -cp /usr/local/bin/h2.jar org.h2.tools.Server -tcp -tcpPort 9092 -tcpAllowOthers -ifNotExists -baseDir "$H2_DATA_DIR" &
+      echo "H2 database server started on port 9092 and restricted to app VM."
     fi
 fi
 
