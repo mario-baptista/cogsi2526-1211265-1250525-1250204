@@ -635,35 +635,7 @@ The following output result demonstrated in the image shows the desired result.
 
 
 # Alternative Solution - Multipass
-
-An alternative to the Vagrant virtualization tool is Multipass, a lightweight virtual machine manager developed by Canonical, the company behind Ubuntu.
-Multipass is designed to quickly launch and manage Ubuntu virtual machines (VMs) across multiple operating systems — Windows, macOS, and Linux — using existing virtualization backends such as Hyper-V, QEMU, VirtualBox, or Apple Hypervisor.
-
-The tool provides a simplified way to create reproducible, isolated, and fast environments, ideal for development, testing, and CI/CD pipelines.
-
-## Comparison Between Multipass and Vagrant
-
-| **Criteria** | **Vagrant** | **Multipass** |
-|---------------|--------------|----------------|
-| **Developer** | HashiCorp | Canonical |
-| **Main Purpose** | Environment provisioning and automation | Lightweight Ubuntu VM management |
-| **Virtualization Backends** | VirtualBox, Hyper-V, VMware, Docker | Hyper-V, QEMU, VirtualBox, Apple Hypervisor |
-| **Default Images** | Custom “boxes” (various OS distributions) | Official minimal Ubuntu images |
-| **Provisioning Support** | Supports Shell, Ansible, Puppet, Chef | Uses cloud-init for setup |
-| **Resource Usage** | Can be resource-heavy | Lightweight and fast |
-| **Ease of Use** | Requires configuration via Vagrantfile | Simple CLI commands |
-| **Focus** | Reproducible development environments | Rapid deployment of isolated Ubuntu instances |
-| **Container Integration** | Integrates with Docker easily | Can host Docker within the VM |
-| **Networking & Shared Folders** | Configurable through Vagrantfile | Automatic mounting of local directories |
-
-
-There are differences that are essential to know, because we are talking about different functionalities and it is not possible to replicate exactly in the same way in Multipass what was developed in Vagrant.
-
-| Feature                     | Vagrant                                   | Multipass                                   |
-|-------------------------------|-------------------------------------------|--------------------------------------------|
-| Automatic Provisioning        | Yes, via Vagrantfile + shell script       | Only if using cloud-init                    |
-| Package Installation          | Script written on host, executed in VM    | Without cloud-init: manual; with cloud-init: automatic |
-| Manual Commands               | Not required                              | Required if cloud-init is not used         |
+   |
 
 
 ## Implementation of Multipass Virtual Machine - First Part
