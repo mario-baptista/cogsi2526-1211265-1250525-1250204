@@ -1,0 +1,12 @@
+package_update: true
+packages:
+  - openjdk-17-jdk
+  - ufw
+  - wget
+runcmd:
+  - wget -q https://repo1.maven.org/maven2/com/h2database/h2/2.2.224/h2-2.2.224.jar -O /usr/local/bin/h2.jar
+  - mkdir -p /mnt/h2-data
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - yes | ufw enable

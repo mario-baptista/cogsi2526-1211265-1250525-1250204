@@ -1,0 +1,16 @@
+package_update: true
+packages:
+  - git
+  - curl
+  - unzip
+  - openjdk-17-jdk
+  - maven
+  - gradle
+  - ufw
+runcmd:
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 8080/tcp
+  - yes | ufw enable
+  - echo "app vm ready"
