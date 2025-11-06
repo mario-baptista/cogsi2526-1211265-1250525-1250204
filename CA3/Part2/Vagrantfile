@@ -7,7 +7,6 @@
 # you're doing.
 
 Vagrant.configure("2") do |config|
-config.vm.boot_timeout = 600
 # === Ensure SSH keys exist ===
   require 'fileutils'
   ssh_dir = File.expand_path("~/.ssh")
@@ -22,46 +21,37 @@ config.vm.boot_timeout = 600
   end
   config.ssh.insert_key = true
   
-#   config.vm.provision "shell", path: "provision.sh"
+  config.vm.provision "shell", path: "provision.sh"
 
   # DB VM
   config.vm.define "db" do |db|
     db.vm.box = "bento/ubuntu-22.04"
     db.vm.hostname = "db-vm"
-    db.vm.network "private_network", ip: "192.168.56.12"
-    db.vm.network "forwarded_port", guest: 8082, host: 8082
-
+    db.vm.network "private_network", ip: "192.168.33.12"
     db.vm.synced_folder "./h2-data", "/vagrant/h2-data", create: true
 
     # Copy custom SSH public key
-#    db.vm.provision "file",  source: File.expand_path("~/.ssh/id_rsa_vagrant.pub"), destination: "/home/vagrant/.ssh/authorized_keys"
-#    db.vm.provision "shell", inline: <<-SHELL
-#      chmod 600 /home/vagrant/.ssh/authorized_keys
-#      chmod 700 /home/vagrant/.ssh
-#    SHELL
+   db.vm.provision "file",  source: File.expand_path("~/.ssh/id_rsa_vagrant.pub"), destination: "/home/vagrant/.ssh/authorized_keys"
+    db.vm.provision "shell", inline: <<-SHELL
+      chmod 600 /home/vagrant/.ssh/authorized_keys
+      chmod 700 /home/vagrant/.ssh
+    SHELL
 
     # Provision Script
-    #db.vm.provision "shell", path: "provision.sh"
+    db.vm.provision "shell", path: "provision.sh"
 
- #   Automation Script for db
- #   db.vm.provision "shell",
- #   env: {
- #   "VM_TYPE" => "db",
- #   "CLONE_REPOS" => "true",
- #   "BUILD_APPS" => "false",
- #   "START_SERVICES" => "true"
- #  },
- #   inline: <<-SHELL
- #   cd /vagrant
- #   ./automate_apps.sh
- #  SHELL
-
- db.vm.provision "ansible_local" do |ans|
-  ans.playbook = "/vagrant/ansible/site.yml"
-  ans.inventory_path = "/vagrant/ansible/hosts.ini"
-  ans.limit = "db"
-  ans.become = true
-end
+    # Automation Script for db
+   db.vm.provision "shell",
+    env: {
+      "VM_TYPE" => "db",
+      "CLONE_REPOS" => "true",
+      "BUILD_APPS" => "false",
+      "START_SERVICES" => "true"
+    },
+    inline: <<-SHELL
+      cd /vagrant
+      ./automate_apps.sh
+    SHELL
 
   end
 
@@ -70,33 +60,26 @@ end
     app.vm.box = "bento/ubuntu-22.04"
     app.vm.hostname = "app-vm"
     app.vm.network "forwarded_port", guest: 8080, host: 8080   # for REST API
-    app.vm.network "private_network", ip: "192.168.56.11"
+    app.vm.network "private_network", ip: "192.168.33.11"
 
     # Copy custom SSH public key
-#    app.vm.provision "file", source: File.expand_path("~/.ssh/id_rsa_vagrant.pub"), destination: "/home/vagrant/.ssh/authorized_keys"
-#    app.vm.provision "shell", inline: <<-SHELL
-#      chmod 600 /home/vagrant/.ssh/authorized_keys
-#      chmod 700 /home/vagrant/.ssh
-#    SHELL
+    app.vm.provision "file", source: File.expand_path("~/.ssh/id_rsa_vagrant.pub"), destination: "/home/vagrant/.ssh/authorized_keys"
+    app.vm.provision "shell", inline: <<-SHELL
+      chmod 600 /home/vagrant/.ssh/authorized_keys
+      chmod 700 /home/vagrant/.ssh
+    SHELL
 
     # Provision Script
-#   app.vm.provision "shell", path: "provision.sh"
+    app.vm.provision "shell", path: "provision.sh"
 
     # Automation Script for app
-#    app.vm.provision "shell", inline: <<-SHELL
-#      cd /vagrant
-#      export VM_TYPE=app
-#      export CLONE_REPOS=true
-#      export BUILD_APPS=true
-#      export START_SERVICES=true
-#      ./automate_apps.sh
-#    SHELL
-
-app.vm.provision "ansible_local" do |ans|
-  ans.playbook = "/vagrant/ansible/site.yml"
-  ans.inventory_path = "/vagrant/ansible/hosts.ini"
-  ans.limit = "app"
-  ans.become = true
-end
+    app.vm.provision "shell", inline: <<-SHELL
+      cd /vagrant
+      export VM_TYPE=app
+      export CLONE_REPOS=true
+      export BUILD_APPS=true
+      export START_SERVICES=true
+      ./automate_apps.sh
+    SHELL
   end
 end

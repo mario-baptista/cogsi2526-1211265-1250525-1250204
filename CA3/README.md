@@ -810,7 +810,3 @@ The following image shows that the API was successfully executed with *http://19
 This figure below proves that the *./gradlew runServer* and *./gradlew runClient* commands were not only successful, but what appears later was also successful.
 
 ![alt text](image-22.png)
-
-
-
-
