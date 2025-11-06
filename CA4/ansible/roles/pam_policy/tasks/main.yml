@@ -1,0 +1,33 @@
+---
+- name: Ensure libpam-pwquality is installed
+  apt:
+    name: libpam-pwquality
+    state: present
+    update_cache: true
+
+- name: Configure PAM password complexity
+  lineinfile:
+    path: /etc/security/pwquality.conf
+    regexp: '^{{ item.key }}='
+    line: "{{ item.key }}={{ item.value }}"
+    create: yes
+  loop:
+    - { key: 'minlen', value: '12' }
+    - { key: 'minclass', value: '3' }
+    - { key: 'maxrepeat', value: '2' }
+    - { key: 'dictcheck', value: '1' }
+    - { key: 'usercheck', value: '1' }
+    - { key: 'maxsequence', value: '3' }
+
+- name: Enforce password history (remember last 5)
+  lineinfile:
+    path: /etc/pam.d/common-password
+    regexp: '^password\s+required\s+pam_unix.so'
+    line: 'password required pam_unix.so remember=5 use_authtok sha512'
+
+- name: Configure account lockout policy
+  blockinfile:
+    path: /etc/pam.d/common-auth
+    insertafter: 'pam_unix.so'
+    block: |
+      auth required pam_tally2.so deny=5 unlock_time=600 onerr=fail audit even_deny_root_account silent

@@ -15,12 +15,22 @@
     path: /opt/gradle_transformation
     state: directory
 
-- name: Copy application source from /vagrant
-  synchronize:
+- name: Ensure /opt/gradle_transformation exists
+  file:
+    path: /opt/gradle_transformation
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+
+- name: Copy application source from shared folder
+  copy:
     src: /vagrant/gradle_transformation/
     dest: /opt/gradle_transformation/
-  delegate_to: localhost
-  ignore_errors: true
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+
 
 - name: Configure H2 database connection
   copy:

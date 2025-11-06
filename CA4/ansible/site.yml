@@ -9,3 +9,9 @@
   become: true
   roles:
     - h2
+
+- name: Configure PAM policy for all hosts
+  hosts: all
+  become: true
+  roles:
+    - pam_policy
