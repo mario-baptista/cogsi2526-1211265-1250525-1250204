@@ -1,0 +1,69 @@
+- name: Update apt cache
+  apt:
+    update_cache: true
+
+- name: Install Java and firewall
+  apt:
+    name:
+      - openjdk-17-jdk
+      - ufw
+      - wget
+    state: present
+
+- name: Create H2 folder
+  file:
+    path: /opt/h2
+    state: directory
+
+- name: Download H2 database jar (retry if network slow)
+  get_url:
+    url: https://repo1.maven.org/maven2/com/h2database/h2/2.2.224/h2-2.2.224.jar
+    dest: /opt/h2/h2.jar
+  register: h2_download
+  retries: 5
+  delay: 4
+  until: h2_download is succeeded
+  ignore_errors: false
+
+# firewall rules
+- name: Deny all incoming
+  ufw:
+    state: enabled
+    policy: deny
+    direction: incoming
+
+- name: Allow app VM to connect to H2 port
+  ufw:
+    rule: allow
+    port: "9092"
+    proto: tcp
+    src: 192.168.56.11
+
+- name: Allow SSH access
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Allow outgoing
+  ufw:
+    state: enabled
+    policy: allow
+    direction: outgoing
+
+- name: Install H2 systemd service
+  template:
+    src: h2.service.j2
+    dest: /etc/systemd/system/h2.service
+
+- name: Enable and start H2
+  systemd:
+    name: h2
+    enabled: true
+    state: started
+
+- name: Verify H2 is listening on port 9092
+  shell: ss -tulpn | grep 9092
+  register: h2_port_check
+  failed_when: "'LISTEN' not in h2_port_check.stdout"
+  changed_when: false

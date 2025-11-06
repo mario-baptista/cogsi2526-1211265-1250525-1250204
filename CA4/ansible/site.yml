@@ -1,0 +1,11 @@
+- name: Configure and deploy Spring app on host1
+  hosts: app
+  become: true
+  roles:
+    - spring_app
+
+- name: Configure and run H2 database on host2
+  hosts: db
+  become: true
+  roles:
+    - h2

@@ -1,0 +1,53 @@
+- name: Update apt cache
+  apt:
+    update_cache: true
+
+- name: Install Java, Git, Gradle
+  apt:
+    name:
+      - openjdk-17-jdk
+      - git
+      - gradle
+    state: present
+
+- name: Ensure app directory exists
+  file:
+    path: /opt/gradle_transformation
+    state: directory
+
+- name: Copy application source from /vagrant
+  synchronize:
+    src: /vagrant/gradle_transformation/
+    dest: /opt/gradle_transformation/
+  delegate_to: localhost
+  ignore_errors: true
+
+- name: Configure H2 database connection
+  copy:
+    dest: /opt/gradle_transformation/src/main/resources/application.properties
+    content: |
+      spring.datasource.url=jdbc:h2:tcp://192.168.33.12:9092/h2db
+      spring.datasource.username=sa
+      spring.datasource.password=
+      server.port=8080
+
+- name: Build app (retry if Gradle fails)
+  shell: ./gradlew build
+  args:
+    chdir: /opt/gradle_transformation
+  register: gradle_build
+  retries: 3
+  delay: 5
+  until: gradle_build.rc == 0
+  failed_when: "'BUILD FAILED' in gradle_build.stdout"
+
+- name: Install service file
+  template:
+    src: spring.service.j2
+    dest: /etc/systemd/system/spring.service
+
+- name: Enable & start service
+  systemd:
+    name: spring
+    enabled: true
+    state: started

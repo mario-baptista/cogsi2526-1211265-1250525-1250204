@@ -1,0 +1,12 @@
+[Unit]
+Description=Spring Application
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/gradle_transformation
+ExecStart=/bin/bash -lc 'exec java -jar $(ls /opt/gradle_transformation/build/libs/*.jar)'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

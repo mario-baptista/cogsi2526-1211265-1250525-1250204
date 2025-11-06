@@ -1,0 +1,10 @@
+[Unit]
+Description=H2 Database Server
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/java -cp /opt/h2/h2.jar org.h2.tools.Server -tcp -tcpPort 9092 -tcpAllowOthers -ifNotExists
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
