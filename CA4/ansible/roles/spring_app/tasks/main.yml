@@ -36,7 +36,7 @@
   copy:
     dest: /opt/gradle_transformation/src/main/resources/application.properties
     content: |
-      spring.datasource.url=jdbc:h2:tcp://192.168.33.12:9092/h2db
+      spring.datasource.url=jdbc:h2:mem:mydb
       spring.datasource.username=sa
       spring.datasource.password=
       server.port=8080
@@ -56,8 +56,14 @@
     src: spring.service.j2
     dest: /etc/systemd/system/spring.service
 
+- name: Allow port 8080 in firewall
+  ufw:
+    rule: allow
+    port: "8080"
+    proto: tcp
+
 - name: Enable & start service
   systemd:
     name: spring
     enabled: true
-    state: started
+    state: restarted

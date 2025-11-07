@@ -4,8 +4,8 @@
   roles:
     - spring_app
 
-- name: Configure and run H2 database on host2
-  hosts: db
+- name: Configure and run H2 database on host1
+  hosts: app
   become: true
   roles:
     - h2

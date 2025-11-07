@@ -60,7 +60,7 @@
   systemd:
     name: h2
     enabled: true
-    state: started
+    state: restarted
 
 - name: Verify H2 is listening on port 9092
   shell: ss -tulpn | grep 9092
