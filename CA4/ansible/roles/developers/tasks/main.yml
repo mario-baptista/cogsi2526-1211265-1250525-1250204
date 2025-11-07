@@ -1,0 +1,13 @@
+- name: Create developers group
+  group:
+    name: developers
+    state: present
+
+- name: Create devuser
+  user:
+    name: devuser
+    group: developers
+    groups: developers
+    state: present
+    shell: /bin/bash
+    create_home: yes

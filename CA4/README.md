@@ -139,3 +139,110 @@ Adding Frodo to employees:
 ![img_updatedWeb](https://github.com/user-attachments/assets/9db48eb1-62fe-4c5d-8a99-9b41d3682b27)
 
 
+
+## Groups and Users
+
+In this part, we enhanced the setup with user and group management.
+
+1. Developers Group and User
+
+Using Ansible, we created a new role called "developers" to manage user and group creation across all VMs.
+
+**New Files Added:**
+- `ansible/roles/developers/tasks/main.yml`: Contains tasks to create the group and user.
+
+**Tasks in `ansible/roles/developers/tasks/main.yml`:**
+- Create the "developers" group using the `group` module.
+- Create the "devuser" user, assigning it to the "developers" group, with a home directory and bash shell.
+
+**Updated Files:**
+- `ansible/site.yml`: Added a new play to run the "developers" role on all hosts before the application and database roles.
+
+This ensures the group and user exist before setting directory ownerships.
+
+**Code for `ansible/roles/developers/tasks/main.yml`:**
+```yaml
+- name: Create developers group
+  group:
+    name: developers
+    state: present
+
+- name: Create devuser
+  user:
+    name: devuser
+    group: developers
+    groups: developers
+    state: present
+    shell: /bin/bash
+    create_home: yes
+```
+
+**Updated `ansible/site.yml`:**
+```yaml
+- name: Setup developers group and user on all hosts
+  hosts: all
+  become: true
+  roles:
+    - developers
+```
+
+## Directory Permissions
+
+- On host1 (app VM): The Spring application directory `/opt/gradle_transformation` is owned by `devuser:developers` with permissions 770, restricting access to members of the developers group.
+- On host2 (db VM): The H2 database directory `/opt/h2` is owned by `devuser:developers` with permissions 770.
+
+**Updated `ansible/roles/spring_app/tasks/main.yml` (added ownership task):**
+```yaml
+- name: Set ownership of app directory
+  file:
+    path: /opt/gradle_transformation
+    owner: devuser
+    group: developers
+    mode: '770'
+    recurse: yes
+```
+
+**Updated `ansible/roles/h2/tasks/main.yml` (added ownership task):**
+```yaml
+- name: Set ownership of h2 directory
+  file:
+    path: /opt/h2
+    owner: devuser
+    group: developers
+    mode: '770'
+    recurse: yes
+```
+
+- Group: developers
+- User: devuser (member of developers group)
+
+![alt text](<Screenshot 2025-11-07 at 19.03.42.png>)
+## Health Checks
+
+We added health-check tasks to verify that services are running correctly after deployment.
+
+- On host1: Use the `uri` module to send a GET request to `http://localhost:8080/` and confirm a 200 status code.
+- On host2: Use the `wait_for` module to check that port 9092 is open and accepting connections.
+
+**Updated `ansible/roles/spring_app/tasks/main.yml` (added health check):**
+```yaml
+- name: Health check for Spring app
+  uri:
+    url: http://localhost:8080/
+    method: GET
+  register: health_check
+  failed_when: health_check.status != 200
+  retries: 5
+  delay: 3
+```
+![alt text](image-1.png)
+
+**Updated `ansible/roles/h2/tasks/main.yml` (added health check):**
+```yaml
+- name: Health check for H2 port
+  wait_for:
+    port: 9092
+    timeout: 30
+```
+
+![alt text](image.png)

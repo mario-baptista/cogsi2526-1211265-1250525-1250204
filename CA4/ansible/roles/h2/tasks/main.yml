@@ -15,6 +15,14 @@
     path: /opt/h2
     state: directory
 
+- name: Set ownership of h2 directory
+  file:
+    path: /opt/h2
+    owner: devuser
+    group: developers
+    mode: '770'
+    recurse: yes
+
 - name: Download H2 database jar (retry if network slow)
   get_url:
     url: https://repo1.maven.org/maven2/com/h2database/h2/2.2.224/h2-2.2.224.jar
@@ -67,3 +75,8 @@
   register: h2_port_check
   failed_when: "'LISTEN' not in h2_port_check.stdout"
   changed_when: false
+
+- name: Health check for H2 port
+  wait_for:
+    port: 9092
+    timeout: 30

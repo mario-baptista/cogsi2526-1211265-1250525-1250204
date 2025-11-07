@@ -1,11 +1,17 @@
+- name: Setup developers group and user on all hosts
+  hosts: all
+  become: true
+  roles:
+    - developers
+
 - name: Configure and deploy Spring app on host1
   hosts: app
   become: true
   roles:
     - spring_app
 
-- name: Configure and run H2 database on host1
-  hosts: app
+- name: Configure and run H2 database on host2
+  hosts: db
   become: true
   roles:
     - h2

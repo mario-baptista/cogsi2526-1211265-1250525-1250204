@@ -31,6 +31,13 @@
     group: vagrant
     mode: '0755'
 
+- name: Set ownership of app directory
+  file:
+    path: /opt/gradle_transformation
+    owner: devuser
+    group: developers
+    mode: '770'
+    recurse: yes
 
 - name: Configure H2 database connection
   copy:
@@ -67,3 +74,12 @@
     name: spring
     enabled: true
     state: restarted
+
+- name: Health check for Spring app
+  uri:
+    url: http://localhost:8080/
+    method: GET
+  register: health_check
+  failed_when: health_check.status != 200
+  retries: 5
+  delay: 3
