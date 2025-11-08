@@ -218,6 +218,52 @@ Retype new password:
 
 The two errors above are normal and comply with what is required to be carried out in this work: the password policy dictates that there must be three of the four-character classes: uppercase letters, lowercase letters, digits, and symbols.
 
+### Ansible Proof of Inventory (Static Form)
+
+The *hosts.ini* file in the *ansible* folder has the following content:
+
+```bash
+[app]
+192.168.56.11 ansible_connection=local
+
+[db]
+192.168.56.12 ansible_connection=local
+```
+
+When executing the command *ansible-inventory -i ansible/hosts.ini --list*, the following result is obtained:
+
+```bash
+{
+    "_meta": {
+        "hostvars": {
+            "192.168.56.11": {
+                "ansible_connection": "local"
+            },
+            "192.168.56.12": {
+                "ansible_connection": "local"
+            }
+        }
+    },
+    "all": {
+        "children": [
+            "ungrouped",
+            "app",
+            "db"
+        ]
+    },
+    "app": {
+        "hosts": [
+            "192.168.56.11"
+        ]
+    },
+    "db": {
+        "hosts": [
+            "192.168.56.12"
+        ]
+    }
+}
+```
+
 ## Groups and Users
 
 In this part, we enhanced the setup with user and group management.

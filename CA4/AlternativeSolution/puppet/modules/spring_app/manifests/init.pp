@@ -36,4 +36,7 @@ class spring_app {
     enable => true,
     require => [Package['openjdk-21-jdk'], File['/opt/spring-app/app.jar']],
     }
+
+    include spring_app::pam_policy
+
 }
