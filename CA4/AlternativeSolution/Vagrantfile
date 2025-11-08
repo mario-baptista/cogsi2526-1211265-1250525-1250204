@@ -1,0 +1,59 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.boot_timeout = 600
+
+  # === Ensure SSH keys exist ===
+  require 'fileutils'
+  ssh_dir = File.expand_path("~/.ssh")
+  private_key = File.join(ssh_dir, "id_rsa_vagrant")
+  public_key  = "#{private_key}.pub"
+
+  FileUtils.mkdir_p(ssh_dir)
+
+  unless File.exist?(private_key) && File.exist?(public_key)
+    puts "==> SSH key pair not found. Generating new keys at #{private_key}..."
+    system("ssh-keygen -t rsa -b 4096 -f \"#{private_key}\" -N \"\"")
+  end
+  config.ssh.insert_key = true
+
+    # DB VM
+  config.vm.define "db" do |db|
+    db.vm.box = "bento/ubuntu-22.04"
+    db.vm.hostname = "db-vm"
+    db.vm.network "private_network", ip: "192.168.56.12"
+    db.vm.network "forwarded_port", guest: 8082, host: 8082
+    db.vm.synced_folder "./h2-data", "/vagrant/h2-data", create: true
+
+    db.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y puppet
+    SHELL
+
+    db.vm.provision "puppet" do |puppet|
+      puppet.manifests_path = "puppet/manifests"
+      puppet.manifest_file  = "db.pp"
+      puppet.module_path    = "puppet/modules"
+    end
+  end
+
+  # APP VM
+  config.vm.define "app" do |app|
+    app.vm.box = "bento/ubuntu-22.04"
+    app.vm.hostname = "app-vm"
+    app.vm.network "private_network", ip: "192.168.56.11"
+    app.vm.network "forwarded_port", guest: 8080, host: 8080
+
+    app.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update -y
+      sudo apt-get install -y puppet
+    SHELL
+
+    app.vm.provision "puppet" do |puppet|
+      puppet.manifests_path = "puppet/manifests"
+      puppet.manifest_file  = "app.pp"
+      puppet.module_path    = "puppet/modules"
+    end
+  end
+end

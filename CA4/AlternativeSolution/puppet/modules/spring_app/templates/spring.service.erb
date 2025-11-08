@@ -1,0 +1,13 @@
+[Unit]
+Description=Spring Boot Application
+After=network.target
+
+[Service]
+User=developer
+ExecStart=/usr/bin/java -jar /opt/spring-app/app.jar
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

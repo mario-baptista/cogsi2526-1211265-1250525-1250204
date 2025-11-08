@@ -1,0 +1,13 @@
+[Unit]
+Description=H2 Database Server
+After=network.target
+
+[Service]
+User=developer
+ExecStart=/usr/bin/java -cp /opt/h2/h2.jar org.h2.tools.Server -tcp -tcpAllowOthers -web -webAllowOthers -ifNotExists
+SuccessExitStatus=143
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

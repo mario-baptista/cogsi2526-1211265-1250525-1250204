@@ -246,3 +246,67 @@ We added health-check tasks to verify that services are running correctly after 
 ```
 
 ![alt text](image.png)
+
+
+## Alternative Solution — Puppet
+
+
+As an alternative to Ansible, we can use Puppet, another powerful Configuration Management Tool.
+While Ansible is agentless (uses SSH to connect and execute playbooks), Puppet uses a master-agent architecture, where each managed node (VM) runs a Puppet agent that connects to a Puppet master to fetch and apply configurations written in manifests (using Puppet DSL).
+
+Our goal is to replicate the same automation pipeline as in the Ansible solution — fully automated provisioning of:
+
+- VMs using Vagrant;
+- H2 Database Service;
+- Spring Boot Application;
+- User and Group management;
+- Health checks and permissions.
+
+### How Puppet Compares to Ansible
+
+| **Feature**              | **Ansible**                                                 | **Puppet**                                                       |
+|---------------------------|-------------------------------------------------------------|------------------------------------------------------------------|
+| **Architecture**          | Agentless (runs over SSH or local)                          | Agent-based (requires master and agent setup)                    |
+| **Language**              | YAML (Declarative Playbooks)                                | Puppet DSL (Ruby-like Declarative Syntax)                        |
+| **Execution Model**       | Push (controller pushes configuration to hosts)             | Pull (agents periodically fetch configuration from master)       |
+| **Idempotency**           | Yes, via module design                                      | Yes, native in its model                                         |
+| **Ease of Use**           | Easier to set up for small environments                     | Better for large infrastructures with frequent syncs             |
+| **Error Handling**        | Manual (ignore_errors, retries, etc.)                       | Automatic, with detailed reporting through PuppetDB              |
+| **Extensibility**         | Simple roles and modules                                   | Complex module ecosystem (Forge)                                 |
+| **Best For**              | Ad-hoc provisioning, testing labs                           | Persistent configuration management across many servers          |
+
+
+### Puppet Architecture
+
+Puppet can work in two ways:
+
+- Master/Agent mode – a central server (Puppet Master) manages several nodes (Agents) that apply the configurations.
+
+- Local Mode (Apply) – each machine applies its own settings without depending on a Master.
+
+In our case (without complex infrastructure), we use local mode, integrated into Vagrant through the “puppet” provisioner.
+Thus, each VM applies its .pp file automatically when it is created.
+
+### Project Structure
+
+The project structure in Puppet is similar to that in Ansible (roles → modules):
+
+CA4/
+│
+├── Vagrantfile
+└── puppet/
+    ├── manifests/
+    │   ├── app.pp
+    │   └── db.pp
+    └── modules/
+        ├── developers/
+        │   └── manifests/init.pp
+        ├── spring_app/
+        │   ├── manifests/init.pp
+        │   └── templates/spring.service.erb
+        └── h2/
+            ├── manifests/init.pp
+            └── templates/h2.service.erb
+
+### Implementation of Puppet Solution
+
