@@ -21,7 +21,16 @@ config.vm.boot_timeout = 600
     system("ssh-keygen -t rsa -b 4096 -f \"#{private_key}\" -N \"\"")
   end
   config.ssh.insert_key = true
-  
+
+  # Install Puppet
+  config.vm.provision "shell", inline: <<-SHELL
+    wget -O /tmp/puppet.deb https://apt.puppet.com/puppet7-release-jammy.deb
+    sudo dpkg -i /tmp/puppet.deb
+    sudo apt-get update
+    sudo apt-get install -y puppet-agent
+    /opt/puppetlabs/bin/puppet module install puppetlabs-stdlib
+  SHELL
+
 #   config.vm.provision "shell", path: "provision.sh"
 
   # DB VM
@@ -56,11 +65,11 @@ config.vm.boot_timeout = 600
  #   ./automate_apps.sh
  #  SHELL
 
-  db.vm.provision "ansible_local" do |ans|
-   ans.playbook = "/vagrant/ansible/site.yml"
-   ans.inventory_path = "/vagrant/ansible/hosts.ini"
-   ans.limit = "db"
-   ans.become = true
+  db.vm.provision "puppet" do |puppet|
+   puppet.manifests_path = "puppet/manifests"
+   puppet.manifest_file = "site.pp"
+   puppet.module_path = "puppet/modules"
+   puppet.options = "--verbose"
  end
 
   end
@@ -92,11 +101,11 @@ config.vm.boot_timeout = 600
 #      ./automate_apps.sh
 #    SHELL
 
- app.vm.provision "ansible_local" do |ans|
-   ans.playbook = "/vagrant/ansible/site.yml"
-   ans.inventory_path = "/vagrant/ansible/hosts.ini"
-   ans.limit = "app"
-   ans.become = true
+ app.vm.provision "puppet" do |puppet|
+   puppet.manifests_path = "puppet/manifests"
+   puppet.manifest_file = "site.pp"
+   puppet.module_path = "puppet/modules"
+   puppet.options = "--verbose"
  end
   end
 end

@@ -246,3 +246,338 @@ We added health-check tasks to verify that services are running correctly after 
 ```
 
 ![alt text](image.png)
+
+
+## CA4 — Part 2: Alternative Configuration Management with Puppet
+
+### Explanation
+
+As an alternative to Ansible, we propose using Puppet. Puppet is a declarative tool that defines infrastructure as code through manifests written in its DSL. It uses a pull-based model where agents on nodes periodically apply configurations from a master, ensuring continuous compliance. This contrasts with Ansible's push-based, imperative approach.
+
+Compared to Ansible:
+- **Strengths of Puppet**: Better for large-scale, ongoing management; built-in reporting; strong community modules.
+- **Weaknesses**: Steeper learning curve; requires agents or master setup.
+- **For this setup**: Puppet achieves the same goals (user/group setup, H2 DB, Spring app, PAM policies) declaratively, with idempotent resources.
+
+### 1. Project Structure (Important Files)
+
+The Puppet setup mirrors the Ansible structure but uses manifests and modules.
+
+- `Vagrantfile.puppet`: Vagrant configuration for Puppet provisioning.
+- `puppet/manifests/site.pp`: Main manifest assigning classes to nodes.
+- `puppet/modules/developers/manifests/init.pp`: Creates developers group and devuser.
+- `puppet/modules/h2/manifests/init.pp`: Configures H2 database service.
+- `puppet/modules/spring_app/manifests/init.pp`: Configures Spring application service.
+- `puppet/modules/pam_policy/manifests/init.pp`: Configures PAM security policies.
+- Templates: `puppet/modules/h2/templates/h2.service.erb`, `puppet/modules/spring_app/templates/spring.service.erb`.
+
+### 2. Vagrantfile.puppet Configuration
+
+Similar to the Ansible Vagrantfile, but uses Puppet provisioner. It installs Puppet agent and stdlib module, then applies manifests.
+
+Key differences:
+- Provisioner: `puppet` instead of `ansible_local`.
+- Paths: `manifests_path`, `module_path`, `manifest_file`.
+- Options: `--verbose` for debugging.
+
+### 3. Puppet Site Manifest (site.pp)
+
+This file assigns classes to nodes based on hostname.
+
+```
+node default {
+  include developers
+  include pam_policy
+}
+
+node 'app-vm' {
+  include spring_app
+}
+
+node 'db-vm' {
+  include h2
+}
+```
+
+### 4. Modules and Roles
+
+#### Developers Module
+
+File: `puppet/modules/developers/manifests/init.pp`
+
+Creates the developers group and devuser.
+
+```
+class developers {
+
+  group { 'developers':
+    ensure => present,
+  }
+
+  user { 'devuser':
+    ensure     => present,
+    gid        => 'developers',
+    groups     => ['developers'],
+    shell      => '/bin/bash',
+    home       => '/home/devuser',
+    managehome => true,
+  }
+
+}
+```
+
+#### PAM Policy Module
+
+File: `puppet/modules/pam_policy/manifests/init.pp`
+
+Installs pwquality, configures password policies, and sets up account lockout.
+
+```
+class pam_policy {
+
+  package { 'libpam-pwquality':
+    ensure => installed,
+  }
+
+  file { '/etc/security/pwquality.conf':
+    ensure  => file,
+    content => "minlen=12\nminclass=3\nmaxrepeat=2\ndictcheck=1\nusercheck=1\nmaxsequence=3\n",
+    require => Package['libpam-pwquality'],
+  }
+
+  exec { 'pam_unix_remember':
+    command => "sed -i 's/^password required pam_unix.so/password required pam_unix.so remember=5 use_authtok sha512/' /etc/pam.d/common-password",
+    unless  => "grep -q 'remember=5' /etc/pam.d/common-password",
+    path    => ['/usr/bin', '/bin'],
+  }
+
+  exec { 'pam_tally2':
+    command => "sed -i '/pam_unix.so/a auth required pam_tally2.so deny=5 unlock_time=600 onerr=fail audit even_deny_root_account silent' /etc/pam.d/common-auth",
+    unless  => "grep -q 'pam_tally2.so' /etc/pam.d/common-auth",
+    path    => ['/usr/bin', '/bin'],
+  }
+
+}
+```
+
+#### H2 Database Module
+
+File: `puppet/modules/h2/manifests/init.pp`
+
+Installs Java, downloads H2, configures firewall, sets up systemd service.
+
+```
+class h2 {
+
+  package { ['openjdk-17-jdk', 'ufw', 'wget']:
+    ensure => installed,
+  }
+
+  file { '/opt/h2':
+    ensure => directory,
+  }
+
+  exec { 'download_h2':
+    command => 'wget -O /opt/h2/h2.jar https://repo1.maven.org/maven2/com/h2database/h2/2.2.224/h2-2.2.224.jar',
+    creates => '/opt/h2/h2.jar',
+    require => File['/opt/h2'],
+    path    => ['/usr/bin', '/bin'],
+  }
+
+  file { '/opt/h2_ownership':
+    path    => '/opt/h2',
+    owner   => 'devuser',
+    group   => 'developers',
+    mode    => '0770',
+    recurse => true,
+    require => [Exec['download_h2'], Class['developers']],
+  }
+
+  # Firewall
+  exec { 'ufw_enable':
+    command => 'ufw --force enable',
+    unless  => 'ufw status | grep -q "Status: active"',
+    path    => ['/usr/sbin', '/sbin'],
+  }
+
+  exec { 'ufw_deny_incoming':
+    command => 'ufw default deny incoming',
+    unless  => 'ufw status | grep -q "Default: deny (incoming)"',
+    path    => ['/usr/sbin', '/sbin'],
+  }
+
+  exec { 'ufw_allow_ssh':
+    command => 'ufw allow 22/tcp',
+    unless  => 'ufw status | grep -q "22/tcp"',
+    path    => ['/usr/sbin', '/sbin'],
+  }
+
+  exec { 'ufw_allow_9092':
+    command => 'ufw allow from 192.168.56.11 to any port 9092 proto tcp',
+    unless  => 'ufw status | grep -q "9092"',
+    path    => ['/usr/sbin', '/sbin'],
+  }
+
+  exec { 'ufw_allow_outgoing':
+    command => 'ufw default allow outgoing',
+    unless  => 'ufw status | grep -q "Default: allow (outgoing)"',
+    path    => ['/usr/sbin', '/sbin'],
+  }
+
+  # Systemd service
+  file { '/etc/systemd/system/h2.service':
+    ensure  => file,
+    content => template('h2/h2.service.erb'),
+  }
+
+  service { 'h2':
+    ensure    => running,
+    enable    => true,
+    subscribe => File['/etc/systemd/system/h2.service'],
+  }
+
+  # Health check
+  exec { 'h2_health_check':
+    command => 'ss -tulpn | grep :9092',
+    unless  => 'ss -tulpn | grep -q :9092',
+    require => Service['h2'],
+    path    => ['/usr/bin', '/bin'],
+  }
+
+}
+```
+
+Systemd Service Template: `puppet/modules/h2/templates/h2.service.erb`
+
+```
+[Unit]
+Description=H2 Database Server
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/h2
+ExecStart=/usr/bin/java -cp /opt/h2/h2.jar org.h2.tools.Server -tcp -tcpPort 9092 -tcpAllowOthers -baseDir /opt/h2
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+#### Spring Application Module
+
+File: `puppet/modules/spring_app/manifests/init.pp`
+
+Installs Java, Git, Gradle, copies app, builds, configures service.
+
+```
+class spring_app {
+
+  package { ['openjdk-17-jdk', 'git', 'gradle']:
+    ensure => installed,
+  }
+
+  file { '/opt/gradle_transformation':
+    ensure => directory,
+  }
+
+  exec { 'copy_app_source':
+    command => 'cp -r /vagrant/gradle_transformation/* /opt/gradle_transformation/',
+    creates => '/opt/gradle_transformation/build.gradle',
+    require => File['/opt/gradle_transformation'],
+    path    => ['/usr/bin', '/bin'],
+  }
+
+  file { '/opt/gradle_transformation_ownership':
+    path    => '/opt/gradle_transformation',
+    owner   => 'devuser',
+    group   => 'developers',
+    mode    => '0770',
+    recurse => true,
+    require => [Exec['copy_app_source'], Class['developers']],
+  }
+
+  file { '/opt/gradle_transformation/src/main/resources/application.properties':
+    ensure  => file,
+    content => "spring.datasource.url=jdbc:h2:mem:mydb\nspring.datasource.username=sa\nspring.datasource.password=\nserver.port=8080\n",
+    require => Exec['copy_app_source'],
+  }
+
+  exec { 'gradle_build':
+    command => 'cd /opt/gradle_transformation && ./gradlew build',
+    unless  => 'test -f /opt/gradle_transformation/build/libs/GradleProject_Transformation.jar',
+    require => [File['/opt/gradle_transformation/src/main/resources/application.properties'], Package['gradle']],
+    path    => ['/usr/bin', '/bin'],
+  }
+
+  # Systemd service
+  file { '/etc/systemd/system/spring.service':
+    ensure  => file,
+    content => template('spring_app/spring.service.erb'),
+  }
+
+  service { 'spring':
+    ensure    => running,
+    enable    => true,
+    subscribe => File['/etc/systemd/system/spring.service'],
+  }
+
+  # Firewall
+  exec { 'ufw_allow_8080':
+    command => 'ufw allow 8080/tcp',
+    unless  => 'ufw status | grep -q "8080"',
+    path    => ['/usr/sbin', '/sbin'],
+  }
+
+  # Health check
+  exec { 'spring_health_check':
+    command => 'curl -f http://localhost:8080/',
+    require => Service['spring'],
+    path    => ['/usr/bin', '/bin'],
+  }
+
+}
+```
+
+Systemd Service Template: `puppet/modules/spring_app/templates/spring.service.erb`
+
+```
+[Unit]
+Description=Spring Application
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/gradle_transformation
+ExecStart=/bin/bash -lc 'exec java -jar $(ls /opt/gradle_transformation/build/libs/*.jar)'
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 5. Running the Automation
+
+First Provision Run:
+
+Run `VAGRANT_VAGRANTFILE=Vagrantfile.puppet vagrant up`. Puppet installs dependencies, applies manifests, and starts services.
+
+Second Run (idempotency confirmed):
+
+Run `VAGRANT_VAGRANTFILE=Vagrantfile.puppet vagrant provision`. Changes are minimal, confirming idempotency.
+
+### Groups and Users
+
+Developers group and devuser are created on all VMs.
+
+Directory Permissions:
+
+- `/opt/h2` owned by devuser:developers, mode 770.
+- `/opt/gradle_transformation` owned by devuser:developers, mode 770.
+
+### Health Checks
+
+- H2: `ss -tulpn | grep 9092` confirms listening.
+- Spring: `curl http://localhost:8080/` returns 200.
+
+This setup mirrors the Ansible functionality while demonstrating Puppet's declarative style.
+
