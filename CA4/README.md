@@ -374,19 +374,18 @@ The project structure in Puppet is similar to that in Ansible (roles → modules
 
 ### Implementation of Puppet Solution
 
-Primeiramente criamos a pasta *AlternativeSolution* dentro da pasta *CA4*.
+First we create the *AlternativeSolution* folder inside the *CA4* folder.
 
 ```bash
 mkdir AlternativeSolution
 ```
 
-Depois executamos o comando dentro da pasta *AlternativeSolution*:
-
+Then we execute the command inside the *AlternativeSolution* folder:
 ```bash
 vagrant init bento/ubuntu-22.04
 ```
 
-Por conseguinte, no ficheiro Vagrantfile gerado, desenvolvemos o seguinte código:
+Therefore, in the generated Vagrantfile file, we develop the following code:
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -636,4 +635,10 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-Com as máquinas virtuais em execução, na máquina host, quando digita-se no browser 192.168.56.11:8080, aparece o seguinte conteudo:
+With the virtual machines running, on the host machine, when you type *192.168.56.11:8080* in the browser, the following content appears:
+
+![alt text](image-5.png)
+
+And, on the host machine, when you type *localhost:8082* in the browser, the following content appears:
+
+![alt text](image-6.png)
