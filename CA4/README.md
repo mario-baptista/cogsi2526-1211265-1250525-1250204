@@ -138,6 +138,131 @@ Adding Frodo to employees:
 
 ![img_updatedWeb](https://github.com/user-attachments/assets/9db48eb1-62fe-4c5d-8a99-9b41d3682b27)
 
+### PAM Configuration 
+
+To perform the PAM configuration, first in the *site.yml* file we add the following code:
+
+```yml
+- name: Configure PAM policy for all hosts
+  hosts: all
+  become: true
+  roles:
+    - pam_policy
+```
+
+Secondly, in the */ansible/roles* folder we create the *pam_policy* folder and within it the *tasks* folder. Within tasks, we develop the *main.yml* file that contains the following code:
+
+```yml
+---
+- name: Ensure libpam-pwquality is installed
+  apt:
+    name: libpam-pwquality
+    state: present
+    update_cache: true
+
+- name: Configure PAM password complexity
+  lineinfile:
+    path: /etc/security/pwquality.conf
+    regexp: '^{{ item.key }}='
+    line: "{{ item.key }}={{ item.value }}"
+    create: yes
+  loop:
+    - { key: 'minlen', value: '12' }
+    - { key: 'minclass', value: '3' }
+    - { key: 'maxrepeat', value: '2' }
+    - { key: 'dictcheck', value: '1' }
+    - { key: 'usercheck', value: '1' }
+    - { key: 'maxsequence', value: '3' }
+
+- name: Enforce password history (remember last 5)
+  lineinfile:
+    path: /etc/pam.d/common-password
+    regexp: '^password\s+required\s+pam_unix.so'
+    line: 'password required pam_unix.so remember=5 use_authtok sha512'
+
+- name: Configure account lockout policy
+  blockinfile:
+    path: /etc/pam.d/common-auth
+    insertafter: 'pam_unix.so'
+    block: |
+      auth required pam_tally2.so deny=5 unlock_time=600 onerr=fail audit even_deny_root_account silent
+```
+
+After that, use the *vagrant up* command to upload both machines.
+The PAM result (about H2 database VM) from the provisioning part from Ansible was as follows:
+
+![alt text](image-3.png)
+
+
+The PAM result (about APP Spring VM) from the provisioning part from Ansible was as follows:
+
+![alt text](image-4.png)
+
+Later, the *vagrant ssh app* command was written to access the app machine. On the app's machine, a test was carried out to change the password of the application's virtual machine. Password 1234 was entered and gave the following error:
+
+ ```bash
+  vagrant@app-vm:~$ sudo passwd vagrant
+  New password:
+  BAD PASSWORD: The password is shorter than 12 characters
+  Retype new password:
+ ```
+
+In this case below, the password *mariobatistanajoaoaraujo1* was typed and gave the following error:
+
+```bash
+vagrant@app-vm:~$ sudo passwd vagrant
+New password:
+BAD PASSWORD: The password contains less than 3 character classes
+Retype new password:
+ ```
+
+The two errors above are normal and comply with what is required to be carried out in this work: the password policy dictates that there must be three of the four-character classes: uppercase letters, lowercase letters, digits, and symbols.
+
+### Ansible Proof of Inventory (Static Form)
+
+The *hosts.ini* file in the *ansible* folder has the following content:
+
+```bash
+[app]
+192.168.56.11 ansible_connection=local
+
+[db]
+192.168.56.12 ansible_connection=local
+```
+
+When executing the command *ansible-inventory -i ansible/hosts.ini --list*, the following result is obtained:
+
+```bash
+{
+    "_meta": {
+        "hostvars": {
+            "192.168.56.11": {
+                "ansible_connection": "local"
+            },
+            "192.168.56.12": {
+                "ansible_connection": "local"
+            }
+        }
+    },
+    "all": {
+        "children": [
+            "ungrouped",
+            "app",
+            "db"
+        ]
+    },
+    "app": {
+        "hosts": [
+            "192.168.56.11"
+        ]
+    },
+    "db": {
+        "hosts": [
+            "192.168.56.12"
+        ]
+    }
+}
+```
 
 
 ## Groups and Users
@@ -254,10 +379,18 @@ We added health-check tasks to verify that services are running correctly after 
 
 As an alternative to Ansible, we propose using Puppet. Puppet is a declarative tool that defines infrastructure as code through manifests written in its DSL. It uses a pull-based model where agents on nodes periodically apply configurations from a master, ensuring continuous compliance. This contrasts with Ansible's push-based, imperative approach.
 
-Compared to Ansible:
-- **Strengths of Puppet**: Better for large-scale, ongoing management; built-in reporting; strong community modules.
-- **Weaknesses**: Steeper learning curve; requires agents or master setup.
-- **For this setup**: Puppet achieves the same goals (user/group setup, H2 DB, Spring app, PAM policies) declaratively, with idempotent resources.
+### How Puppet Compares to Ansible
+
+| **Feature**              | **Ansible**                                                 | **Puppet**                                                       |
+|---------------------------|-------------------------------------------------------------|------------------------------------------------------------------|
+| **Architecture**          | Agentless (runs over SSH or local)                          | Agent-based (requires master and agent setup)                    |
+| **Language**              | YAML (Declarative Playbooks)                                | Puppet DSL (Ruby-like Declarative Syntax)                        |
+| **Execution Model**       | Push (controller pushes configuration to hosts)             | Pull (agents periodically fetch configuration from master)       |
+| **Idempotency**           | Yes, via module design                                      | Yes, native in its model                                         |
+| **Ease of Use**           | Easier to set up for small environments                     | Better for large infrastructures with frequent syncs             |
+| **Error Handling**        | Manual (ignore_errors, retries, etc.)                       | Automatic, with detailed reporting through PuppetDB              |
+| **Extensibility**         | Simple roles and modules                                   | Complex module ecosystem (Forge)                                 |
+| **Best For**              | Ad-hoc provisioning, testing labs                           | Persistent configuration management across many servers          |
 
 ### 1. Project Structure (Important Files)
 
