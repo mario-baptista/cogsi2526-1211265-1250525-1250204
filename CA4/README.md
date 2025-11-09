@@ -1,22 +1,32 @@
-CA4 - README.md with Part1 and Alternative Solution
+# CA4 - README.md with Part1 and Alternative Solution
 
 
-
-CA4 — Part 1
-
+## CA4 — Part 1
 
 
 We basically took the setup from CA3 Part 2 and improved it using Ansible.  
 Now, instead of manually installing things inside the VMs, we used Vagrant to set up the VMs and Ansible (local provisioner) to configure and run the services.
-The goal was to make everything: Automated, repeatable (idempotent), resilient to small failures (using ignore\_errors, failed\_when, retries, and until)
+The goal was to make everything: Automated, repeatable (idempotent), resilient to small failures (using ignore\_errors, failed\_when, retries, and until).
 
-1. Project Structure (Important Files)
+### 1. Project Structure (Important Files)
+
+We organized the automation files into roles so that each component (Spring app and H2 database) is configured independently and cleanly.
 
 ![img_createFiles](https://github.com/user-attachments/assets/e6996ca6-68ab-470b-9732-accd9d7b3e90)
 
-2. Vagrantfile Configuration
+- The Vagrantfile defines and creates the two VMs.
+- ansible/hosts.ini tells Ansible which VM belongs to which group.
+- ansible/site.yml assigns roles to machines.
+- Each role contains tasks to set up one component (Spring app or database).
+
+This organization makes the setup modular and easy to maintain.
+
+
+### 2. Vagrantfile Configuration
 
 Each VM runs ansible\_local and is assigned a role through site.yml.
+
+This is the step we use to open up the Vagrantfile:
 
 ![img_VagrantfileChange](https://github.com/user-attachments/assets/51a98e72-09d3-4bcc-b688-517f66037b71)
 
@@ -25,47 +35,66 @@ Each VM runs ansible\_local and is assigned a role through site.yml.
 ![img_VagrantfileChange2](https://github.com/user-attachments/assets/89743a79-1fbc-41d5-ab70-0121a3d7e00a)
 
 
-3. Ansible Inventory (Which VM is Which)
+Inside the Vagrantfile, i configured each VM  to automatically run Ansible from within the VM (using ansible_local). This means we don’t need Ansible installed on our host system.
+This step ensures that as soon as the VM is created, Ansible provisions it automatically, no manual SSH or command running is needed.
+
+### 3. Ansible Inventory (Which VM is Which)
 
 Both roles run locally within each VM:
 
 ![img_hosts ini](https://github.com/user-attachments/assets/a32b283a-f782-40fd-ac8b-fcb6eca22e3d)
 
+Because Ansible runs inside each VM, the connection type is local.
+This avoids any SSH or network configuration issues.
 
-4. site.yml (Role Assignment)
+### 4. site.yml (Role Assignment)
 
 This file tells Ansible which role goes to which VM:
 
 ![img_site yml](https://github.com/user-attachments/assets/ec5b303f-be14-4d70-afe9-be371877a5a8)
 
+This means:
+- The app Vm installs and runs the Spring application
+- The db VM installs and runs the H2 database
 
-5. Role: Spring Application (spring\_app)
+This keeps our deployment clean and organized.
 
-File: ansible/roles/spring\_app/tasks/main.yml
+
+### 5. Role: Spring Application (spring\_app)
+
+
+The spring app role is responsible for installing, building, and running the Spring Boot application on the app VM.
+This role is located in:
+ansible/roles/spring\_app/tasks/main.yml
+
 This:
-
--Installs Java, Git, Gradle
-
--Copies the Spring source code into /opt/gradle\_transformation
-
--Configures connection to H2
-
--Builds the app using Gradle
-
--Creates and starts a Systemd service
+1.	Installs Required Packages: the application needs Java to run so we use Git so we can copy the source code then we install Gradle because it builds the Spring Boot application.
+Installing these via Ansible ensures they are always set up the same way on every provision run.
+2.	Copies the Spring Source Code
+The Spring project folder is copied to:
+-  /opt/gradle_transformation
+This makes the application code available to the VM so it is not dependent on the host.
+3.	Configures Database Connection
+Inside application.properties, the app is updated to use the H2 database running on the other VM.
+This is important because the app and the database are not running on the same machine.
+4.	Builds the Application Using Gradle
+This step turns the source code into a  JAR file. In CA3, we did this manually so now it happens automatically during provisioning.
+5.	Creates and Enables a Systemd Service
+We create a service file so the Spring application runs in the background like a real server process.
 
 ![img_main yml1](https://github.com/user-attachments/assets/f9a950d4-0644-4904-a2d8-51642da068c8)
 
+By doing this i automated the entire Spring app deployment, no manual compiling or running needed after booting.
 
-6.Error Handling Used Here
+### 6. Error Handling Used Here
 
-We used:
+Sometimes Gradle fails due to network timing or repo delays.
 
--(ignore_errors:true): For file sync issues
+To avoid failed provisioning runs, i used:
+- (ignore_errors:true) for skipping minor file sync issues
+- retries/until for retrying Gradle when the network is unstable
+- failed_when for detecting failed builds more accurately
 
--retries/until: For Gradle sometimes failing
-
--failed_when: To detect failed builds more accurately
 
 ![img_ignoreErrors](https://github.com/user-attachments/assets/2ac60d9c-2dea-412c-b686-3f39f4cd5c7e)
 
@@ -76,27 +105,41 @@ We used:
 ![img_retryUntil](https://github.com/user-attachments/assets/f4500e1a-dd13-434f-9950-760c9e64c75f)
 
 
-7. H2 Database (h2)
+### 7. H2 Database (h2)
 
-File: ansible/roles/h2/tasks/main.yml
+The second VM is responsible for running the H2 Database, which will store and serve the data used by the Spring Boot application.
+To automate its setup, we created an Ansible role called h2 located at:
+ansible/roles/h2/tasks/main.yml
+
 This :
--Installs Java and UFW firewall
+1.	Install Java and UFW: H2 requires Java to run because it is a Java based database and UFW is installed to manage firewall access so that communication stays secure.
 
--Downloads the H2 server JAR
+2.	Download the H2 Database JAR: Instead of installing H2 manually, we download the h2.jar file. This keeps the installation lightweight and makes the setup repeatable.
 
--Configures firewall access for port 9092
+3.	Open Firewall Port 9092: This port allows the Spring app (on the other VM) to connect to the database. Only necessary ports are opened for security.
 
--Sets up H2 as a Systemd service
+4.	Create a Systemd Service: We create a service file (h2.service.j2) so that the H2 server starts automatically when the VM boots, keeps running in the background, restarts again if it crashes.
+
 
 ![img_main yml3](https://github.com/user-attachments/assets/bd16b394-5ef5-4f18-ab90-9722cdf497ef)
 
 
-Systemd Service Template
+**Systemd Service Template**
+
+By automating H2 in this way, we ensure that the database is always available and consistently configured, no matter how many times we rebuild the VM.
 
 ![img_h2 service j2](https://github.com/user-attachments/assets/eb2ac030-f076-4255-a9ff-77e92b226d1f)
 
 
-8. Running the Automation
+### 8. Running the Automation
+
+To start evrything we need to do : 
+
+```bash
+vagrant up
+```
+
+Running it a second time confirms idempotency, almost no tasks change so. This proves that our automation is stable and repeatable.
 
 First Provision Run:
 
@@ -106,33 +149,43 @@ Second Run (idempotency confirmed):
 
 ![img_secondRunProvision](https://github.com/user-attachments/assets/3dba9ea3-aa64-4b55-8ab4-1fcf83e869a3)
 
-9. H2 Database Verification
+### 9. H2 Database Verification
 
-H2 Running as Service:
+We checked that H2 is running:
 
 ![img_H2Server](https://github.com/user-attachments/assets/e30ac784-7f3f-4bc3-b81e-564fbeaa9412)
 
 
-Web Login:
+Then we accessed the H2 web console from a browser and confirmed that all tables were present:
 
 ![img_H2Login](https://github.com/user-attachments/assets/d3407358-9d41-46f7-870e-e012fec5df93)
 
-Database Tables:
+Here we can also see our database tables:
 
 ![img_H2Tables](https://github.com/user-attachments/assets/c2ba396d-7964-4bc4-b509-d68e49fa185b)
 
 
-10. Spring Application Working
+### 10. Spring Application Working
     
-Employees:
+Once both VMs were successfully provisioned, we tested that the Spring Boot application was running correctly and connected to the H2 database.
+We accessed the application endpoints in a browser.
+
+This displays the list of employees:
 
 ![img_employeeWeb](https://github.com/user-attachments/assets/62977a59-64c0-41e5-8753-47e1dad1e45f)
 
-Orders:
+This displays the list of orders:
 
 ![img_ordersWeb](https://github.com/user-attachments/assets/fa0159dd-f807-4213-b8c6-1f7941480d0e)
 
-Adding Frodo to employees:
+This confirmed that:
+- The Spring application started successfully
+- It could access the H2 database running on the other VM
+- The API endpoints were working normally
+
+
+### Adding Data to Test Communication
+To verify that the app was actually writing to the database, not just displaying static data, we added a new employee named Frodo.
 
 ![img_addFrodo](https://github.com/user-attachments/assets/661b9fa9-2218-4903-b613-8c93a1d3411e)
 
@@ -263,7 +316,6 @@ When executing the command *ansible-inventory -i ansible/hosts.ini --list*, the 
     }
 }
 ```
-
 
 ## Groups and Users
 
