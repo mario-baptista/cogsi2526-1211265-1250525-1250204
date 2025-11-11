@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y git
 
 RUN git clone https://github.com/mario-baptista/cogsi2526-1211265-1250525-1250204.git /app
 
-WORKDIR /app/CA5/gradle_transformation/v1
+WORKDIR /app/CA2/Part2/GradleProject_Transformation
 
 RUN chmod +x ./gradlew
 

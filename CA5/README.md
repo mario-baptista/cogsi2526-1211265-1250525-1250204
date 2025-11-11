@@ -17,9 +17,13 @@ Both projects implement two Docker containerization strategies to compare build 
 ```dockerfile
 FROM eclipse-temurin:17
 
-COPY . /app
+RUN apt-get update && apt-get install -y git
 
-WORKDIR /app
+RUN git clone https://github.com/mario-baptista/cogsi2526-1211265-1250525-1250204.git /app
+
+WORKDIR /app/CA2/Part1/gradle_basic_demo
+
+RUN chmod +x ./gradlew
 
 RUN ./gradlew jar
 
@@ -51,9 +55,13 @@ CMD ["java", "-cp", "app.jar", "basic_demo.ChatServerApp", "59001"]
 ```dockerfile
 FROM eclipse-temurin:17
 
-COPY . /app
+RUN apt-get update && apt-get install -y git
 
-WORKDIR /app
+RUN git clone https://github.com/mario-baptista/cogsi2526-1211265-1250525-1250204.git /app
+
+WORKDIR /app/CA2/Part2/GradleProject_Transformation
+
+RUN chmod +x ./gradlew
 
 RUN ./gradlew bootJar
 
@@ -79,21 +87,37 @@ CMD ["java", "-jar", "app.jar"]
 ```
 **Explanation**: Uses Eclipse Temurin JDK 17. Copies a pre-built Spring Boot JAR from the host, exposes port 8080, and runs the web application. No build step inside the container.
 
-![alt text](<Screenshot 2025-11-11 at 19.34.48.png>)
 
-![alt text](<Screenshot 2025-11-11 at 19.34.54.png>) 
+### Build
 
-![alt text](<Screenshot 2025-11-11 at 19.49.24.png>) 
+```bash
+docker build -t gradle_basic_demo_v1 .
+docker build -t gradle_transformation_v1 .
+docker build -t gradle_transformation_v2 .
+docker build -t gradle_basic_demo_v2 .
+```
+
+### Run
+
+```bash
+docker run -d -p 59001:59001 --name basic_demo_v1 gradle_basic_demo_v1
+docker run -d -p 59002:59001 --name basic_demo_v2 gradle_basic_demo_v2
+docker run -d -p 8080:8080 --name transformation_v1 gradle_transformation_v1
+docker run -d -p 8081:8080 --name transformation_v2 gradle_transformation_v2
+```
+
+![alt text](<Screenshot 2025-11-11 at 21.12.07.png>)
 
 ## Docker History Analysis
 
 Using `docker history <image>` to inspect layer composition:
 
-![alt text](<Screenshot 2025-11-11 at 19.36.29.png>) 
-![alt text](<Screenshot 2025-11-11 at 19.36.10.png>) 
+![alt text](<Screenshot 2025-11-11 at 21.19.55.png>) 
+![alt text](<Screenshot 2025-11-11 at 21.19.50.png>)
 
 ### Image Size Comparison
 - **Version 1**: Typically larger due to inclusion of:
+  - Git
   - Gradle wrapper and dependencies
   - Source code and intermediate build artifacts
   - Full JDK for compilation
@@ -112,4 +136,4 @@ Using `docker history <image>` to inspect layer composition:
 
 Both approaches were implemented for both demo projects to compare the methodologies in practice.
 
-**Key Differences**: Version 1 Dockerfiles include the full source and build process, resulting in larger images with build dependencies. Version 2 Dockerfiles are simpler, copying only the final JAR, leading to smaller, faster images. The basic_demo uses classpath execution, while transformation uses executable JARs.
+**Key Differences**: Version 1 Dockerfiles include the full source and build process, resulting in larger images with build dependencies. Version 2 Dockerfiles are simpler, copying only the final JAR, leading to smaller, faster images.

@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y git
 
 RUN git clone https://github.com/mario-baptista/cogsi2526-1211265-1250525-1250204.git /app
 
-WORKDIR /app/CA5/gradle_basic_demo/v1
+WORKDIR /app/CA2/Part1/gradle_basic_demo
 
 RUN chmod +x ./gradlew
 
