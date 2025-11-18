@@ -11,9 +11,6 @@ RUN chmod +x ./gradlew
 
 RUN ./gradlew bootJar
 
-CMD ["java", "-jar", "build/libs/GradleProject_Transformation.jar"]
-
-
 # Step 2: Runtime
 FROM eclipse-temurin:17
 
