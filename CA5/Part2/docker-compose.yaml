@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  db:
+    image: oscarfonts/h2
+    container_name: h2-server
+    ports:
+      - "1521:1521"     
+      - "81:81"         
+    environment:
+      H2_OPTIONS: "-tcp -tcpAllowOthers -web -webAllowOthers"
+    restart: always
