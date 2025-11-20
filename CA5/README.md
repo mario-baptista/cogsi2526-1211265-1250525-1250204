@@ -283,20 +283,14 @@ Then we logged in:
 
 ### 8. Comparison between Podman vs Docker
 
-Feature                  | Docker	             | Podman	           |Which is Better?
-
-------------------------------------------------------------------------------------
-Runs daemon              | Yes (Docker Daemon) | No daemon	       | Podman is safer
-
-Rootless                 | containers	 Limited | Full rootless	   | Podman
-
-Dockerfile support	     | Yes	               | Yes	             | Equal
-
-Docker CLI compatibility | Native	             | Mostly compatible | Almost equal
-
-Compose support	         | docker‑compose	     | podman‑compose	   | Equal
-
-Security	               | Medium	             | High	             | Podman
+| Feature                  | Docker	             | Podman	           | Which is Better? |
+| ------------------------ | ------------------- | ----------------- | ---------------  | 
+| Runs daemon              | Yes (Docker Daemon) | No daemon	       | Podman is safer  |
+| Rootless                 | containers	 Limited | Full rootless	   | Podman           |
+| Dockerfile support	     | Yes	               | Yes	             | Equal            |
+| Docker CLI compatibility | Native	             | Mostly compatible | Almost equal     |
+| Compose support	         | docker‑compose	     | podman‑compose	   | Equal            |
+| Security	               | Medium	             | High	             | Podman           |
 
 In conclusion:
 
