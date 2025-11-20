@@ -177,3 +177,139 @@ Both approaches were implemented for both demo projects to compare the methodolo
 | ------- | --------------------------------------------------------------- | ------------------------- |
 | 1       | Full source, Gradle wrapper, Git, dependencies, build artifacts | Larger images             |
 | 2       | Only runtime + JAR                                              | Smaller, efficient images |
+
+
+## Alternative Solution
+
+### 1. Introduction
+
+This assignment required me to design, analyze, compare, and implement an alternative container management solution that does not rely on Docker. The goal was not just to replace Docker with another tool but to understand:
+
+-How the alternative tool functions
+
+-How it compares to Docker conceptually and technically
+
+-How the alternative tool can be used to achieve the exact same goals of the original assignment
+
+-How to implement the design in a real working setup
+
+To satisfy all these requirements, I selected Podman as the alternative container engine. Podman is widely recognized as the most Docker compatible substitute while offering additional security and architectural benefits.
+
+### 2. Why I chose Podman
+
+Podman is a container engine created by Red Hat. Unlike Docker, Podman:
+
+-Runs daemonless (no background service)
+
+-Can run containers rootless, improving security
+
+-Uses OCI standards (Open Container Initiative)
+
+-Is Docker‑compatible (can use Dockerfiles, same commands)
+
+Podman is therefore a perfect alternative to Docker for modern containerized development.
+
+### 3. Installing Podman (Alternative to Docker)
+
+Before doing anything, I had to install Podman using:
+
+<img width="1073" height="207" alt="img1" src="https://github.com/user-attachments/assets/69b3e44b-3d6b-4d62-bce9-bd9c0aee98be" />
+
+This ensures:
+
+-podman → main container engine
+
+-pip / curl / jq → tools needed for scripts
+
+-podman-compose → Docker‑Compose equivalent for Podman
+
+Afterwards we check the installation is complete
+
+<img width="377" height="257" alt="img2" src="https://github.com/user-attachments/assets/80d564e7-0f51-4f69-ad84-aa14cdbeda6a" />
+
+
+### 4. Building the application with Podman
+
+We replaced Docker builds with Podman builds, because Podman can build Dockerfiles directly without changing them.
+
+
+<img width="1461" height="142" alt="img3" src="https://github.com/user-attachments/assets/dd82e819-8e94-4c45-ad74-8adf0c748514" />
+
+This produced the container image.
+![img4](https://github.com/user-attachments/assets/59ed2034-2111-4797-bcaa-61c99a8326e4)
+
+### 5. Running the application container
+
+After building, we run it:
+
+<img width="1377" height="421" alt="img9" src="https://github.com/user-attachments/assets/be512344-9bbb-4590-a76c-bb13389a4c1a" />
+
+This:
+
+-Starts Spring Boot
+
+-Exposes port 8080 on the host
+
+-Shows the application boot logs
+
+
+### 6. Running H2 database inside Podman
+
+Docker was not allowed, so we created an H2 server entirely using Podman. We ran H2 in Podman so the environment mirrors a real containerized stack
+
+So the Spring Boot app can access a persistent DB
+
+#### 6.1 Create folder for persistent H2 data
+<img width="1373" height="208" alt="img7" src="https://github.com/user-attachments/assets/328f5003-eda1-4f38-93e3-e46b4f7eff0b" />
+
+#### 6.2 Download the H2 database JAR
+<img width="1467" height="126" alt="img10" src="https://github.com/user-attachments/assets/e6c6c444-e460-4e7a-821a-c68b97515597" />
+
+#### 6.3 Start the H2 server
+<img width="1377" height="421" alt="img9" src="https://github.com/user-attachments/assets/5db61385-7132-4667-8043-8e2a70921abd" />
+
+### 7. Connecting to H2
+
+Once H2 server was running, we navigated to:
+
+http://localhost:8082
+
+Then we logged in:
+
+![imgh2_webConsole](https://github.com/user-attachments/assets/18833e6b-b72e-43f1-8f20-64b04ba6b031)
+
+![img_h2LoggedIn](https://github.com/user-attachments/assets/1b9bb31a-f5af-4b0b-b85f-3c9ebdf151e6)
+
+
+### 8. Comparison between Podman vs Docker
+
+Feature                  | Docker	             | Podman	           |Which is Better?
+--------------------------------------------------------------------------------------
+Runs daemon              | Yes (Docker Daemon) | No daemon	       | Podman is safer
+Rootless                 | containers	 Limited | Full rootless	   | Podman
+Dockerfile support	     | Yes	               | Yes	             | Equal
+Docker CLI compatibility | Native	             | Mostly compatible | Almost equal
+Compose support	         | docker‑compose	     | podman‑compose	   | Equal
+Security	               | Medium	             | High	             | Podman
+Summary
+
+-Podman is more secure (no daemon, rootless)
+
+-Podman is Docker‑compatible (same commands)
+
+-Podman uses systemd integration, better for servers
+
+This makes Podman a good alternative solution to docker
+
+### 9. How Podman solves the same goals 
+
+The assignment required designing how the alternative tool (Podman) could solve the same goals as the original Docker solution.
+
+- Build the application with podman build
+- Run the application with podman run -p 8080:8080
+- Run a database with Podman container running H2
+- Connect application with database usingg same networking logic as Docker
+
+No part of the original architecture needed to change.
+
+
