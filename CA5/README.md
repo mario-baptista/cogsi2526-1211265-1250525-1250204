@@ -284,14 +284,21 @@ Then we logged in:
 ### 8. Comparison between Podman vs Docker
 
 Feature                  | Docker	             | Podman	           |Which is Better?
---------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------
 Runs daemon              | Yes (Docker Daemon) | No daemon	       | Podman is safer
+
 Rootless                 | containers	 Limited | Full rootless	   | Podman
+
 Dockerfile support	     | Yes	               | Yes	             | Equal
+
 Docker CLI compatibility | Native	             | Mostly compatible | Almost equal
+
 Compose support	         | docker‑compose	     | podman‑compose	   | Equal
+
 Security	               | Medium	             | High	             | Podman
-Summary
+
+In conclusion:
 
 -Podman is more secure (no daemon, rootless)
 
@@ -310,6 +317,6 @@ The assignment required designing how the alternative tool (Podman) could solve 
 - Run a database with Podman container running H2
 - Connect application with database usingg same networking logic as Docker
 
-No part of the original architecture needed to change.
+
 
 
