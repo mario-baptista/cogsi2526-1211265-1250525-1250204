@@ -1,0 +1,9 @@
+FROM eclipse-temurin:17
+
+WORKDIR /h2
+
+RUN curl -L -o h2.jar https://repo1.maven.org/maven2/com/h2database/h2/2.2.224/h2-2.2.224.jar
+
+EXPOSE 9092 8082
+
+CMD ["java", "-jar", "h2.jar", "-tcp", "-tcpAllowOthers", "-tcpPort", "9092", "-web", "-webAllowOthers", "-webPort", "8082"]
