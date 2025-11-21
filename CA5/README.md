@@ -186,13 +186,13 @@ Both approaches were implemented for both demo projects to compare the methodolo
 Before starting the assignment, I had to pick one specific container tool to replace Docker. There are a few options out there (Podman, LXC/LXD, systemd-nspawn, containerd, etc.), after researching a bit, Podman ended up being the most logical choice.
 This assignment required me to design, analyze, compare, and implement an alternative container management solution that does not rely on Docker. The goal was not just to replace Docker with another tool but to understand:
 
--How the alternative tool functions
+- How the alternative tool functions
 
--How it compares to Docker 
+- How it compares to Docker 
 
--How the alternative tool can be used to achieve the exact same goals of the original assignment
+- How the alternative tool can be used to achieve the exact same goals of the original assignment
 
--How to implement the design in a working setup
+- How to implement the design in a working setup
 
 To meet all these requirements, I selected Podman as the alternative container engine. Podman is widely recognized as the most Docker compatible substitute while offering additional security and architectural benefits.
 
@@ -201,31 +201,31 @@ To meet all these requirements, I selected Podman as the alternative container e
 Out of all the Docker alternatives available today, Podman made the most sense for this assignment.
 The main reasons were:
 
-1.It doesn’t use a daemon, which makes it safer.
+1. It doesn’t use a daemon, which makes it safer.
 Docker relies heavily on a background service called the Docker daemon,while Podman does not have this, and it just runs the containers directly without needing a separate running process
 
 This gives Podman two advantages:
 
--Better security (no daemon running all the time)
+- Better security (no daemon running all the time)
 
--Fewer failure points (if a service crashes, it doesn’t bring containers down)
+- Fewer failure points (if a service crashes, it doesn’t bring containers down)
 
-2.It supports rootless containers.
+2. It supports rootless containers.
 This means containers can run without requiring admin permissions while Docker can’t always do this properly, especially on Windows.
 This matters because running containers as root can sometimes be risky, and Podman avoids that by design.
 
-3.It follows the same OCI standards as Docker.
+3. It follows the same OCI standards as Docker.
 This basically means Podman follows the same container standards that Docker does. Because of this, Podman can:
 
--use Docker images
+- use Docker images
 
--push/pull from Docker registries
+- push/pull from Docker registries
 
--run containers using the same image format
+- run containers using the same image format
 
 So there is no need to convert anything and the transition is smooth.
 
-4.It can use the same Dockerfiles and almost the same commands
+4. It can use the same Dockerfiles and almost the same commands
 This was the main reason choosing Podman made life easier for this assignment, since the goal wasn’t to redesign the whole workflow but just use an alternative tool, this compatibility was helpful
 
 Basically, Podman works very similarly to Docker, but with a different architecture and some extra advantages.
@@ -242,11 +242,11 @@ Because of this, I could follow almost the same workflow as the Docker version o
 
 In conclusion:
 
--Podman is more secure (no daemon, rootless)
+- Podman is more secure (no daemon, rootless)
 
--Podman is Docker‑compatible (same commands)
+- Podman is Docker‑compatible (same commands)
 
--Podman uses systemd integration, better for servers
+- Podman uses systemd integration, better for servers
 
 This makes Podman a good alternative solution to docker
 
@@ -298,13 +298,13 @@ Podman handled the entire build process smoothly because it understands Dockerfi
 
 While the image was building, I could see logs showing:
 
--dependencies being downloaded
+- dependencies being downloaded
 
--the Spring Boot project being compiled
+- the Spring Boot project being compiled
 
--files being copied into the container
+- files being copied into the container
 
--the final image being created
+- the final image being created
 
 The important part is that Podman produced the exact same final image that Docker would have produced but just with a different engine behind it and this allowed it to produce the container image
 
@@ -319,13 +319,13 @@ This part is basically the equivalent of what we usually do with Docker’s "doc
 
 This command:
 
--starts a container from the image I built earlier
+- starts a container from the image I built earlier
 
--maps port 8080 inside the container to 8080 on the host
+- maps port 8080 inside the container to 8080 on the host
 
--lets me access the Spring Boot app from my browser
+- lets me access the Spring Boot app from my browser
 
--shows the Spring Boot logs directly in the terminal
+- shows the Spring Boot logs directly in the terminal
 This behavior is exactly the same as Docker, which is why Podman is considered Docker compatible
 
 Once the logs showed everything was running, I opened:
@@ -343,9 +343,9 @@ The original Docker based project used a Docker container to run an H2 database 
 
 That meant:
 
--setting up H2 as a containerized service,
+- setting up H2 as a containerized service,
 
--making sure the database persisted somewhere, and ensuring that the Spring Boot app could still connect to it.
+- making sure the database persisted somewhere, and ensuring that the Spring Boot app could still connect to it.
 
 So I built the same setup using Podman.
 
@@ -356,9 +356,9 @@ Before starting the H2 server, I first created a local folder where the database
 
 This step matters because:
 
--without a mounted folder, H2 would store everything inside the container
+- without a mounted folder, H2 would store everything inside the container
 
--when the container stops, all data would be lost
+- when the container stops, all data would be lost
 
 By creating a local directory, I ensured that the H2 data survives restarts, just like with a real database container.
 
@@ -371,11 +371,11 @@ So I downloaded it manually using this commandd
 
 This step ensures that:
 
--the container can actually run the H2 server
+- the container can actually run the H2 server
 
--the database engine exists in the environment
+- the database engine exists in the environment
 
--Podman doesn’t have to pull anything from Docker Hub 
+- Podman doesn’t have to pull anything from Docker Hub 
 
 Basically, this was preparing the tools needed to start H2 in standalone mode.
 
@@ -387,13 +387,13 @@ This shows the command running:
 
 Inside the container, H2 starts and:
 
--opens an HTTP console on port 8082
+- opens an HTTP console on port 8082
 
--listens for JDBC connections
+- listens for JDBC connections
 
--stores its files in the mounted directory
+- stores its files in the mounted directory
 
--behaves exactly as it would in a Docker container
+- behaves exactly as it would in a Docker container
 
 This step recreates the same database environment as the Docker version of the assignment.
 
@@ -417,13 +417,13 @@ http://localhost:8082
 
 This page lets you:
 
--verify that H2 actually started correctly
+- verify that H2 actually started correctly
 
--log into the database
+- log into the database
 
--run SQL queries
+- run SQL queries
 
--check if the mounted folders are working correctly
+- check if the mounted folders are working correctly
 
 Just being able to load this page meant that Podman exposed the ports correctly and the H2 service was working exactly the same as it would in Docker.
 
@@ -434,11 +434,11 @@ Once the H2 console loaded, I used the login details
 
 Logging in confirmed:
 
--the H2 server is running
+- the H2 server is running
 
--the directory where data is stored is configured correctly
+- the directory where data is stored is configured correctly
 
--the JDBC URL is correct
+- the JDBC URL is correct
 
 
 
