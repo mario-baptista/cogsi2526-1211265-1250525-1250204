@@ -8,5 +8,31 @@ services:
       - "1521:1521"     
       - "81:81"         
     environment:
-      H2_OPTIONS: "-tcp -tcpAllowOthers -web -webAllowOthers"
+      H2_OPTIONS: "-tcp -tcpAllowOthers -web -webAllowOthers -baseDir /opt/h2-data -ifNotExists"
     restart: always
+    volumes:
+      - h2-data:/opt/h2-data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:81 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: ./gradle_transformation
+    container_name: web-server
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://db:1521/test
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  h2-data:
