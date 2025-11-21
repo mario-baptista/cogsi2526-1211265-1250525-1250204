@@ -329,6 +329,174 @@ docker push joaoaraujo1250525/gradle_basic_demo:multi-stage
 ![alt text](image-4.png)
 
 
+# Part 2: Docker Compose
+
+## Running the Application
+
+To start the application:
+
+```bash
+docker-compose up
+```
+
+To stop the application:
+
+```bash
+docker-compose down
+```
+
+```docker
+version: "3.8"
+
+services:
+  db:
+    image: oscarfonts/h2
+    container_name: h2-server
+    ports:
+      - "1521:1521"     
+      - "81:81"         
+    environment:
+      H2_OPTIONS: "-tcp -tcpAllowOthers -web -webAllowOthers -baseDir /opt/h2-data -ifNotExists"
+    restart: always
+    volumes:
+      - h2-data:/opt/h2-data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:81 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: ./gradle_transformation
+    container_name: web-server
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://db:1521/test
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  h2-data:
+```
+
+## Health Check
+
+We added a `healthcheck` to the `db` service to ensure it is fully ready before the `web` service starts.
+
+The check uses `wget` to ping the web console port (81).
+
+The `web` service uses `depends_on` with `condition: service_healthy` to wait for the database.
+
+## Data Persistence:
+We defined a named volume `h2-data`.
+
+This volume is mounted to `/opt/h2-data` inside the `db` container.
+
+We configured `H2_OPTIONS` with `-baseDir /opt/h2-data` to ensure the database files are stored in the volume.
+This ensures that data persists even if the container is removed or restarted.
+
+## Network Connectivity
+
+Docker Compose automatically creates a default network for the services. This allows containers to communicate with each other using their service names as hostnames.
+
+- **web**: Can resolve the database at `db:1521` or `db:81`.
+- **db**: Can resolve the web service at `web:8080`.
+
+This eliminates the need for manual IP management and ensures reliable communication between services.
+
+## Verification
+
+### Network Connectivity
+We verified that the containers can communicate with each other using their service names as hostnames.
+
+**1. Web to DB**
+The `web` container can resolve `db` and connect to port 81.
+
+```bash
+docker exec web-server curl -v http://db:81
+```
+
+**2. DB to Web**
+The `db` container can resolve `web` and connect to port 8080.
+
+```bash
+docker exec h2-server curl http://web:8080
+```
+
+![alt text](image-6.png)
+
+### Persistence
+We verified persistence by creating a file in the volume, restarting the container, and confirming the file still existed.
+
+1. Create a test file:
+```bash
+docker exec h2-server touch /opt/h2-data/test_persistence.txt
+```
+
+2. Restart the database container:
+```bash
+docker-compose restart db
+```
+
+3. Check if the file still exists:
+```bash
+docker exec h2-server ls -l /opt/h2-data/test_persistence.txt
+```
+
+![alt text](image-5.png)
+
+### Environment Variables
+We verified that the environment variables are correctly passed to the application container.
+
+```bash
+docker exec web-server env
+```
+
+![alt text](image-7.png)
+
+## Push to Docker Hub
+
+To publish the images to Docker Hub, we first need to tag them with our username and then push them.
+
+### 1. Tagging Images
+
+We tag the `web` image (built by compose) and the `db` image (used by compose).
+
+**Web Image:**
+```bash
+docker tag part2-web mariozito/part2-web:latest
+```
+
+**DB Image:**
+```bash
+docker tag oscarfonts/h2 mariozito/part2-db:latest
+```
+
+![Insert screenshot of tagging images here]
+
+### 2. Pushing Images
+
+**Push Web Image:**
+```bash
+docker push mariozito/part2-web:latest
+```
+
+**Push DB Image:**
+```bash
+docker push mariozito/part2-db:latest
+```
+
+![alt text](image-8.png)
+
+![alt text](image-9.png)
+
 ## Alternative Solution
 
 ### Introduction
@@ -642,170 +810,3 @@ Logging in confirmed:
 
 
 
-# Part 2: Docker Compose
-
-## Running the Application
-
-To start the application:
-
-```bash
-docker-compose up
-```
-
-To stop the application:
-
-```bash
-docker-compose down
-```
-
-```docker
-version: "3.8"
-
-services:
-  db:
-    image: oscarfonts/h2
-    container_name: h2-server
-    ports:
-      - "1521:1521"     
-      - "81:81"         
-    environment:
-      H2_OPTIONS: "-tcp -tcpAllowOthers -web -webAllowOthers -baseDir /opt/h2-data -ifNotExists"
-    restart: always
-    volumes:
-      - h2-data:/opt/h2-data
-    healthcheck:
-      test: ["CMD-SHELL", "wget -q -O - http://localhost:81 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  web:
-    build: ./gradle_transformation
-    container_name: web-server
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:h2:tcp://db:1521/test
-      - SPRING_DATASOURCE_USERNAME=sa
-      - SPRING_DATASOURCE_PASSWORD=
-      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.h2.Driver
-      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.H2Dialect
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    depends_on:
-      db:
-        condition: service_healthy
-
-volumes:
-  h2-data:
-```
-
-## Health Check
-
-We added a `healthcheck` to the `db` service to ensure it is fully ready before the `web` service starts.
-
-The check uses `wget` to ping the web console port (81).
-
-The `web` service uses `depends_on` with `condition: service_healthy` to wait for the database.
-
-## Data Persistence:
-We defined a named volume `h2-data`.
-
-This volume is mounted to `/opt/h2-data` inside the `db` container.
-
-We configured `H2_OPTIONS` with `-baseDir /opt/h2-data` to ensure the database files are stored in the volume.
-This ensures that data persists even if the container is removed or restarted.
-
-## Network Connectivity
-
-Docker Compose automatically creates a default network for the services. This allows containers to communicate with each other using their service names as hostnames.
-
-- **web**: Can resolve the database at `db:1521` or `db:81`.
-- **db**: Can resolve the web service at `web:8080`.
-
-This eliminates the need for manual IP management and ensures reliable communication between services.
-
-## Verification
-
-### Network Connectivity
-We verified that the containers can communicate with each other using their service names as hostnames.
-
-**1. Web to DB**
-The `web` container can resolve `db` and connect to port 81.
-
-```bash
-docker exec web-server curl -v http://db:81
-```
-
-**2. DB to Web**
-The `db` container can resolve `web` and connect to port 8080.
-
-```bash
-docker exec h2-server curl http://web:8080
-```
-
-![alt text](image-6.png)
-
-### Persistence
-We verified persistence by creating a file in the volume, restarting the container, and confirming the file still existed.
-
-1. Create a test file:
-```bash
-docker exec h2-server touch /opt/h2-data/test_persistence.txt
-```
-
-2. Restart the database container:
-```bash
-docker-compose restart db
-```
-
-3. Check if the file still exists:
-```bash
-docker exec h2-server ls -l /opt/h2-data/test_persistence.txt
-```
-
-![alt text](image-5.png)
-
-### Environment Variables
-We verified that the environment variables are correctly passed to the application container.
-
-```bash
-docker exec web-server env
-```
-
-![alt text](image-7.png)
-
-## Push to Docker Hub
-
-To publish the images to Docker Hub, we first need to tag them with our username and then push them.
-
-### 1. Tagging Images
-
-We tag the `web` image (built by compose) and the `db` image (used by compose).
-
-**Web Image:**
-```bash
-docker tag part2-web mariozito/part2-web:latest
-```
-
-**DB Image:**
-```bash
-docker tag oscarfonts/h2 mariozito/part2-db:latest
-```
-
-![Insert screenshot of tagging images here]
-
-### 2. Pushing Images
-
-**Push Web Image:**
-```bash
-docker push mariozito/part2-web:latest
-```
-
-**Push DB Image:**
-```bash
-docker push mariozito/part2-db:latest
-```
-
-![alt text](image-8.png)
-
-![alt text](image-9.png)
