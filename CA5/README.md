@@ -5,11 +5,11 @@ This assignment involves two Gradle-based projects:
 - **gradle_basic_demo**: A simple chat server application built with Gradle, demonstrating basic Java application containerization.
 - **gradle_transformation**: A Spring Boot web application that was originally a Maven project, transformed to use Gradle build system. It provides web services on port 8080.
 
-Both projects implement two Docker containerization strategies to compare build approaches.
 
 ## Part 1: Create two versions of solution and a Multi-Stage Environment
 
-In this first part of the work, different approaches to building and executing the application were implemented, with the aim of comparing the impact of build strategies on image size, layer structure, and runtime efficiency. Two distinct versions of the server were created — one where the entire compilation process takes place within Docker (Version 1) and another where the JAR is pre-compiled on the host and simply copied into the image (Version 2).
+In this first part of the work, different approaches to building and executing the application were implemented, with the aim of comparing the impact of build strategies on image size, layer structure, and runtime efficiency. Two distinct versions of the server were created — one where the entire compilation process takes place within Docker (Version 1) and another where the JAR is pre-compiled on the host and simply copied into the image (Version 2). Both projects implement two Docker containerization strategies to compare build approaches.
+
 
 In addition, a third approach was developed using multi-stage builds, which explicitly separates the compilation phase from the execution phase, allowing for the creation of lighter images optimised for production.
 
