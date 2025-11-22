@@ -427,6 +427,8 @@ To stop the application:
 docker-compose down
 ```
 
+This code defines a docker-compose file with two services: an H2 database server and a Spring Boot application.
+
 ```docker
 version: "3.8"
 
@@ -468,9 +470,11 @@ volumes:
   h2-data:
 ```
 
+The db service uses the oscarfonts/h2 image, exposes ports 1521 and 81, activates server mode and the H2 web console, stores data in a persistent volume called h2-data and has a healthcheck to ensure that the database is working before other services start. The web service is built from the ./gradle_transformation folder, exposes port 8080 and receives environment variables that configure the connection to H2. It depends on the db service and only starts when the database is healthy. The file also defines the h2-data volume, used to maintain database data even after reboots.
+
 ## Health Check
 
-We added a `healthcheck` to the `db` service to ensure it is fully ready before the `web` service starts.
+We added a `healthcheck` to the `db` service to ensure it is fully ready before the `web` service starts. Comprueba que la consola web responde correctamente: It runs every 10 seconds. If it fails 5 times, the service is considered *unhealthy*. This is important so that the web service only starts when the DB is ready.
 
 The check uses `wget` to ping the web console port (81).
 
