@@ -25,4 +25,4 @@ WORKDIR /app
 
 EXPOSE 59001
 
-CMD ["java", "-cp", "build/libs/basic_demo-0.1.0.jar", "basic_demo.ChatServerApp", "59001"]
+CMD ["java", "-cp", "app.jar", "basic_demo.ChatServerApp", "59001"]
