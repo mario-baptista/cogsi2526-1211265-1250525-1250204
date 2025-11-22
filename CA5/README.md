@@ -1,6 +1,4 @@
-# CA5 - Part 1: Dockerizing Gradle Applications
-
-## Projects Overview
+# CA5 - Docker
 
 This assignment involves two Gradle-based projects:
 
@@ -9,7 +7,13 @@ This assignment involves two Gradle-based projects:
 
 Both projects implement two Docker containerization strategies to compare build approaches.
 
-## Docker Strategies
+## Part 1: Create two versions of solution and a Multi-Stage Environment
+
+In this first part of the work, different approaches to building and executing the application were implemented, with the aim of comparing the impact of build strategies on image size, layer structure, and runtime efficiency. Two distinct versions of the server were created — one where the entire compilation process takes place within Docker (Version 1) and another where the JAR is pre-compiled on the host and simply copied into the image (Version 2).
+
+In addition, a third approach was developed using multi-stage builds, which explicitly separates the compilation phase from the execution phase, allowing for the creation of lighter images optimised for production.
+
+The analysis also included the use of the docker history command to observe how build choices influence the layers and final size of the images, as well as real-time monitoring of the resources consumed by the containers (CPU, memory, network, and I/O) in order to evaluate the behaviour of the different versions during execution.
 
 ### ChatApp Version 1:
 - **Approach**: Clone the repository and compile the application directly within the Docker container.
@@ -43,6 +47,7 @@ CMD ["java", "-cp", "build/libs/basic_demo-0.1.0.jar", "basic_demo.ChatServerApp
 
 ### ChatApp Version 2:
 - **Approach**: Build the application on the host machine and copy the resulting JAR file into the Docker image.
+
 
 ```dockerfile
 FROM eclipse-temurin:17
@@ -83,7 +88,7 @@ EXPOSE 8080
 CMD ["java", "-jar", "build/libs/GradleProject_Transformation.jar"]
 ```
 
-### Line by line breakdown:
+### Explanation of each instruction:
 
 - FROM eclipse-temurin:17: Starts with a full JDK 17 image needed for compilation
 - RUN apt-get update && apt-get install -y git: Installs Git to clone repository
@@ -97,7 +102,8 @@ CMD ["java", "-jar", "build/libs/GradleProject_Transformation.jar"]
 
 ### Spring Application Version 2:
 - **Approach**: Build the application on the host machine and copy the resulting JAR file into the Docker image.
-- 
+
+
 ```dockerfile
 FROM eclipse-temurin:17
 
@@ -109,7 +115,8 @@ EXPOSE 8080
 
 CMD ["java", "-jar", "app.jar"]
 ```
-### Line-by-Line Breakdown:
+### Explanation of each instruction:
+
 - FROM eclipse-temurin:17: Uses JDK image
 - COPY...: File copy from host build context into container
 - WORKDIR /app: Sets working directory
@@ -290,6 +297,65 @@ To conclude:
 - The v1 image is huge because it includes everything that was used to compile the application.
 - The multi-stage image is small because it only includes what is necessary to run the application.
 
+## Monitor containers resource usage in real time
+
+
+Before analyzing resource consumption with docker stats, it is necessary to get both containers running. The commands used are:
+
+```bash
+docker run -d --name multi-stage -p 59006:59001 gradle_basic_demo:multi-stage
+
+docker run -d --name gradledemo_v1 -p 59005:59001 gradle_basic_demo:v1
+```
+
+Each part of these commands has a specific function:
+
+1. docker run -d: Runs the container in detached mode (in the background), allowing it to continue running even after closing the terminal.
+
+2. --name <name>: Assign a name to the container to make it easier to identify and monitor:
+
+- multi-stage corresponds to the optimized image built with multi-stage.
+
+- gradledemo_v1 corresponds to the traditional version (v1), which includes the entire build environment.
+
+3. -p <host>:<container> -  Defines the port mapping between the host and the container:
+
+- 59006:59001 → the host exposes port 59006, redirecting to port 59001 in the multi-stage container.
+
+- 59005:59001 → the host exposes port 59005, redirecting to 59001 in container v1.
+
+This allows you to test both versions of the application at the same time, each on a different port.
+
+4. Running image
+
+At the end of the command, the Docker image that will be executed is referenced, that's, the two images:
+
+- gradle_basic_demo:multi-stage
+- gradle_basic_demo:v1
+
+
+The image presented above shows the result of the **docker stats** command applied to the two running containers: gradledemo_v1 and multi-stage. This output allows you to observe, in real time, how each container uses system resources. Even though these two versions were built with completely different Docker strategies, the behavior shown in the image demonstrates something important: at runtime, both applications consume practically the same resources.
+
+![alt text](image-12.png)
+
+In the image it is possible to identify several fundamental metrics:
+
+- CPU Usage: Both containers present almost identical values, around 0.18%, which indicates that the applications are in an idle state and are not processing significant load. This confirms that the image construction method (traditional vs. multi-stage) does not influence CPU consumption during application execution.
+
+- Memory Used: The memory used by each container is very similar:
+
+      **v1: 58.56 MiB and multi-stage: 56.86 MiB**
+
+The difference is minimal and perfectly normal. This metric only represents the use of the Java process that is inside the container. So, even though the multi-stage image is much smaller, it doesn't change the memory needed to run the JVM and the application.
+
+- Memory Percentage: The percentage of RAM used by each container is around 0.36% – 0.37%. This corresponds to the fact that both have equivalent consumption at the JVM level, regardless of how the image was built.
+
+- Net I/O: The network input/output values are also very close (872B/126B and 1.3kB/126B). This demonstrates that both containers performed only minimal communications, probably related to application startup.
+
+- PIDS: Both containers have 20 PIDs, showing that they both run the same Java application with the same number of internal threads (such as Garbage Collector threads, application execution threads, etc.).
+
+This reinforces that the type of construction (single-stage or multi-stage) does not change the way the JVM creates internal processes.
+
 ## Tagging and Publishing Images to Docker Hub
 
 After building the Docker images for each application present in the project (gradle_basic_demo and gradle_transformation), appropriate tags were created for each one, following good versioning and deployment practices.
@@ -320,16 +386,32 @@ docker push joaoaraujo1250525/gradle_basic_demo:v1
 docker push joaoaraujo1250525/gradle_basic_demo:multi-stage
 ```
 
-**gradle_basic_demo:v1 push:**
+### **gradle_basic_demo:v1 push:**
 
 ![alt text](image-2.png)
 
-**gradle_basic_multi-stage:v1 push:**
+This image shows the push of the version (v1) to Docker Hub. Each *Pushed* line corresponds to the upload of a different layer of the image. As this version includes the entire build environment (Git, Gradle, dependencies, source code and full JDK), the number of layers is large and the upload is heavier. In the end, Docker calculates and presents the SHA256 digest, which uniquely identifies this version of the image in the remote repository.
+
+### **gradle_basic_multi-stage:v1 push:**
+
+The image below shows the sending of the optimized version built with multi-stage. Here, Docker uploads many fewer layers, because the final image contains just the JAR and JRE, without build tools. You can also notice several “Layer already exists” lines, indicating that some layers were already in Docker Hub and did not need to be resubmitted, speeding up the process. The push also ends with the generation of the digest, confirming that the multi-stage image was published successfully.
+
 
 ![alt text](image-4.png)
 
+The image below shows proof of the images published on Docker Hub.
+
+![alt text](image-11.png)
 
 # Part 2: Docker Compose
+
+In Part 2, the goal was to integrate the Spring Boot application and the H2 database into an environment orchestrated through Docker Compose, allowing multiple services to be managed as a single unit. To do this, a docker-compose.yml file was created that defines two main services: the H2 database (db) and the web application (web).
+
+This approach simplifies configuration, ensures automatic communication between services, allows you to control startup orders, manage environment variables, create persistent volumes, and verify the health of containers through health checks.
+
+Tests were also performed to confirm connectivity between containers via hostname, data persistence through volumes, correct transmission of environment variables, and network system operation.
+
+Finally, the images used by Compose were properly tagged and published on Docker Hub, ensuring that they can be run on any machine without the need to recompile the project.
 
 ## Running the Application
 
