@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                dir('CA6/Part1/gradle_basic_demo') {
+                    sh 'chmod +x gradlew'
+                    sh './gradlew clean bootJar'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('CA6/Part1') {
+                    // This assumes Jenkins has access to Vagrant and VirtualBox on the host
+                    // or is running in an environment where these tools are available.
+                    sh 'vagrant up --provision'
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            archiveArtifacts artifacts: 'CA6/Part1/gradle_basic_demo/build/libs/*.jar', allowEmptyArchive: true
+        }
+    }
+}
