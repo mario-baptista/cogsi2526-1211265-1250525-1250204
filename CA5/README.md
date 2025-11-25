@@ -474,7 +474,7 @@ The db service uses the oscarfonts/h2 image, exposes ports 1521 and 81, activate
 
 ## Health Check
 
-We added a `healthcheck` to the `db` service to ensure it is fully ready before the `web` service starts. Comprueba que la consola web responde correctamente: It runs every 10 seconds. If it fails 5 times, the service is considered *unhealthy*. This is important so that the web service only starts when the DB is ready.
+We added a `healthcheck` to the `db` service to ensure it is fully ready before the `web` service starts. Makes sure the web console responds correctly: It runs every 10 seconds. If it fails 5 times, the service is considered *unhealthy*. This is important so that the web service only starts when the DB is ready.
 
 The check uses `wget` to ping the web console port (81).
 
@@ -564,8 +564,6 @@ docker tag part2-web mariozito/part2-web:latest
 ```bash
 docker tag oscarfonts/h2 mariozito/part2-db:latest
 ```
-
-![Insert screenshot of tagging images here]
 
 ### 2. Pushing Images
 
