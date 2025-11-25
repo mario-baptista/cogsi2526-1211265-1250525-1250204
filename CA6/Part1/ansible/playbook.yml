@@ -1,0 +1,62 @@
+---
+- name: Provision and Deploy Spring Boot App
+  hosts: all
+  become: yes
+  vars:
+    app_dir: /opt/spring-app
+    jar_source: "{{ playbook_dir }}/../gradle_basic_demo/build/libs/basic_demo-0.1.0.jar" # Default path, can be overridden
+    jar_dest: "{{ app_dir }}/app.jar"
+
+  tasks:
+    - name: Install OpenJDK 17
+      apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Copy application JAR
+      copy:
+        src: "{{ jar_source }}"
+        dest: "{{ jar_dest }}"
+        mode: '0644'
+      # Only copy if the source file exists (to avoid errors during initial provisioning if build hasn't run)
+      ignore_errors: yes
+
+    - name: Create systemd service
+      copy:
+        dest: /etc/systemd/system/spring-app.service
+        content: |
+          [Unit]
+          Description=Spring Boot Application
+          After=network.target
+
+          [Service]
+          User=root
+          ExecStart=/usr/bin/java -jar {{ jar_dest }}
+          SuccessExitStatus=143
+
+          [Install]
+          WantedBy=multi-user.target
+      notify:
+        - Restart Spring App
+
+    - name: Enable and start Spring App service
+      systemd:
+        name: spring-app
+        enabled: yes
+        state: started
+        daemon_reload: yes
+      ignore_errors: yes # Ignore if jar is missing
+
+  handlers:
+    - name: Restart Spring App
+      systemd:
+        name: spring-app
+        state: restarted
+        daemon_reload: yes

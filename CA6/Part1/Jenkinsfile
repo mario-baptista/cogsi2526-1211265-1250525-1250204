@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    environment {
+        // Define path to the Gradle wrapper
+        GRADLE_WRAPPER = './gradlew'
+        // Define path to the Ansible playbook
+        ANSIBLE_PLAYBOOK = 'ansible/playbook.yml'
+        // Define path to the Ansible inventory
+        ANSIBLE_INVENTORY = 'ansible/inventory'
+    }
+
+    stages {
+        stage('Build') {
+            steps {
+                dir('CA6/Part1/gradle_basic_demo') {
+                    sh 'chmod +x gradlew'
+                    sh './gradlew clean build'
+                }
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                dir('CA6/Part1/gradle_basic_demo') {
+                    archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
+                }
+            }
+        }
+
+        stage('Deploy to Blue') {
+            steps {
+                dir('CA6/Part1') {
+                    // Ensure permissions for private keys (Jenkins might need this)
+                    sh 'chmod 600 ../../.vagrant/machines/blue/virtualbox/private_key || true'
+                    
+                    // Run Ansible playbook
+                    // We pass the absolute path of the built jar to Ansible
+                    ansiblePlaybook(
+                        playbook: "${ANSIBLE_PLAYBOOK}",
+                        inventory: "${ANSIBLE_INVENTORY}",
+                        limit: 'blue',
+                        extras: [
+                            jar_source: "${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/basic_demo-0.1.0.jar"
+                        ]
+                    )
+                }
+            }
+        }
+    }
+}
