@@ -33,8 +33,8 @@ pipeline {
         stage('Provision Infrastructure') {
             steps {
                 dir('CA6/Part1') {
-                    // Bring up the VMs
-                    sh 'vagrant up'
+                    // Bring up the VMs using VMware Fusion
+                    sh 'vagrant up --provider=vmware_desktop'
                     // Validate they are running
                     sh 'vagrant status'
                 }
@@ -46,7 +46,8 @@ pipeline {
                 dir('CA6/Part1') {
                     // Ensure permissions for private keys (Jenkins might need this)
                     // .vagrant is in the current directory (CA6/Part1)
-                    sh 'chmod 600 .vagrant/machines/blue/virtualbox/private_key || true'
+                    // Updated path for VMware Fusion
+                    sh 'chmod 600 .vagrant/machines/blue/vmware_desktop/private_key || true'
                     
                     // Run Ansible playbook using shell command
                     // This avoids the need for the Jenkins Ansible plugin
