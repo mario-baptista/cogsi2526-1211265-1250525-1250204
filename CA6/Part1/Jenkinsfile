@@ -8,6 +8,8 @@ pipeline {
         ANSIBLE_PLAYBOOK = 'ansible/playbook.yml'
         // Define path to the Ansible inventory
         ANSIBLE_INVENTORY = 'ansible/inventory'
+        // Ensure Vagrant and Ansible are in the PATH
+        PATH = "/usr/local/bin:/Users/mariozito/.local/bin:$PATH"
     }
 
     stages {
