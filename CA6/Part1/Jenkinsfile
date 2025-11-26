@@ -32,18 +32,16 @@ pipeline {
             steps {
                 dir('CA6/Part1') {
                     // Ensure permissions for private keys (Jenkins might need this)
-                    sh 'chmod 600 ../../.vagrant/machines/blue/virtualbox/private_key || true'
+                    // .vagrant is in the current directory (CA6/Part1)
+                    sh 'chmod 600 .vagrant/machines/blue/virtualbox/private_key || true'
                     
-                    // Run Ansible playbook
-                    // We pass the absolute path of the built jar to Ansible
-                    ansiblePlaybook(
-                        playbook: "${ANSIBLE_PLAYBOOK}",
-                        inventory: "${ANSIBLE_INVENTORY}",
-                        limit: 'blue',
-                        extras: [
-                            jar_source: "${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/basic_demo-0.1.0.jar"
-                        ]
-                    )
+                    // Run Ansible playbook using shell command
+                    // This avoids the need for the Jenkins Ansible plugin
+                    sh """
+                        ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} \
+                        --limit blue \
+                        --extra-vars "jar_source=${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/basic_demo-0.1.0.jar"
+                    """
                 }
             }
         }
