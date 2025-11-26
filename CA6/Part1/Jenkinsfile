@@ -28,6 +28,17 @@ pipeline {
             }
         }
 
+        stage('Provision Infrastructure') {
+            steps {
+                dir('CA6/Part1') {
+                    // Bring up the VMs
+                    sh 'vagrant up'
+                    // Validate they are running
+                    sh 'vagrant status'
+                }
+            }
+        }
+
         stage('Deploy to Blue') {
             steps {
                 dir('CA6/Part1') {
