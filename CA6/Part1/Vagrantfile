@@ -1,6 +1,6 @@
 Vagrant.configure("2") do |config|
   # Use ARM64 box for Apple Silicon
-  config.vm.box = "bento/ubuntu-22.04-arm64"
+  config.vm.box = "spox/ubuntu-arm"
 
   config.vm.define "blue" do |blue|
     blue.vm.network "private_network", ip: "192.168.56.10"
