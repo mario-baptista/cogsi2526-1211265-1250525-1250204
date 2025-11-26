@@ -54,7 +54,7 @@ pipeline {
                     sh """
                         ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} \
                         --limit blue \
-                        --extra-vars "jar_source=${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/GradleProject_Transformation.jar"
+                        --extra-vars "jar_source=${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/GradleProject_Transformation.jar ansible_ssh_private_key_file=${WORKSPACE}/CA6/Part1/.vagrant/machines/blue/vmware_desktop/private_key"
                     """
                 }
             }
