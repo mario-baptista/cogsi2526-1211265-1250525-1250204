@@ -13,11 +13,32 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Assemble') {
             steps {
                 dir('CA6/Part1/gradle_basic_demo') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew clean build'
+                    sh './gradlew clean assemble'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('CA6/Part1/gradle_basic_demo') {
+                    sh './gradlew test'
+                }
+            }
+            post {
+                always {
+                    dir('CA6/Part1/gradle_basic_demo') {
+                        junit 'build/test-results/test/*.xml'
+                    }
                 }
             }
         }
@@ -44,17 +65,36 @@ pipeline {
         stage('Deploy to Blue') {
             steps {
                 dir('CA6/Part1') {
-                    // Ensure permissions for private keys (Jenkins might need this)
-                    // .vagrant is in the current directory (CA6/Part1)
-                    // Updated path for VMware Fusion
+                    // Ensure permissions for private keys
                     sh 'chmod 600 .vagrant/machines/blue/vmware_desktop/private_key || true'
                     
-                    // Run Ansible playbook using shell command
-                    // This avoids the need for the Jenkins Ansible plugin
+                    // Run Ansible playbook targeting 'blue'
                     sh """
                         ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} \
                         --limit blue \
                         --extra-vars "jar_source=${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/GradleProject_Transformation.jar ansible_ssh_private_key_file=${WORKSPACE}/CA6/Part1/.vagrant/machines/blue/vmware_desktop/private_key"
+                    """
+                }
+            }
+        }
+
+        stage('Deploy to Production?') {
+            steps {
+                input message: 'Deploy to Production?', ok: 'Deploy'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('CA6/Part1') {
+                    // Ensure permissions for private keys
+                    sh 'chmod 600 .vagrant/machines/green/vmware_desktop/private_key || true'
+                    
+                    // Run Ansible playbook targeting 'green'
+                    sh """
+                        ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} \
+                        --limit green \
+                        --extra-vars "jar_source=${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/GradleProject_Transformation.jar ansible_ssh_private_key_file=${WORKSPACE}/CA6/Part1/.vagrant/machines/green/vmware_desktop/private_key"
                     """
                 }
             }
