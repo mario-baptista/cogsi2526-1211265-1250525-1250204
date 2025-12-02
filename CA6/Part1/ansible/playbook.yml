@@ -1,11 +1,11 @@
 ---
 - name: Provision and Deploy Spring Boot App
-  hosts: all
+  hosts: green
   become: yes
+
   vars:
     app_dir: /opt/spring-app
-    jar_source: "{{ playbook_dir }}/../gradle_basic_demo/build/libs/basic_demo-0.1.0.jar" # Default path, can be overridden
-    jar_dest: "{{ app_dir }}/app.jar"
+    jar_dest: "{{ app_dir }}/GradleProject_Transformation.jar"
 
   tasks:
     - name: Install OpenJDK 17
@@ -19,26 +19,30 @@
         path: "{{ app_dir }}"
         state: directory
         mode: '0755'
+        owner: vagrant
+        group: vagrant
 
     - name: Copy application JAR
       copy:
         src: "{{ jar_source }}"
         dest: "{{ jar_dest }}"
-        mode: '0644'
-      # Only copy if the source file exists (to avoid errors during initial provisioning if build hasn't run)
-      ignore_errors: yes
+        mode: '755'
+        owner: vagrant
+        group: vagrant
 
     - name: Create systemd service
       copy:
         dest: /etc/systemd/system/spring-app.service
         content: |
           [Unit]
-          Description=Spring Boot Application
+          Description=Spring Boot Application on Green
           After=network.target
 
           [Service]
-          User=root
+          User=vagrant
           ExecStart=/usr/bin/java -jar {{ jar_dest }}
+          Restart=always
+          RestartSec=5
           SuccessExitStatus=143
 
           [Install]
@@ -46,13 +50,18 @@
       notify:
         - Restart Spring App
 
-    - name: Enable and start Spring App service
+    - name: Reload systemd and start service
       systemd:
         name: spring-app
         enabled: yes
         state: started
         daemon_reload: yes
-      ignore_errors: yes # Ignore if jar is missing
+
+    - name: Wait for app to be available (port 8080)
+      wait_for:
+        port: 8080
+        delay: 3
+        timeout: 40
 
   handlers:
     - name: Restart Spring App

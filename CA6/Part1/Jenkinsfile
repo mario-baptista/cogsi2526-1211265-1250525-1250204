@@ -2,17 +2,13 @@ pipeline {
     agent any
 
     environment {
-        // Define path to the Gradle wrapper
-        GRADLE_WRAPPER = './gradlew'
-        // Define path to the Ansible playbook
-        ANSIBLE_PLAYBOOK = 'ansible/playbook.yml'
-        // Define path to the Ansible inventory
-        ANSIBLE_INVENTORY = 'ansible/inventory'
-        // Ensure Vagrant and Ansible are in the PATH
-        PATH = "/usr/local/bin:/Users/mariozito/.local/bin:$PATH"
+        REPO_PATH_WSL = "/mnt/c/vagrant_projects/CA6/Part1"
+        REPO_PATH_MAC = "$WORKSPACE/CA6/Part1"
+        JAR_NAME = "GradleProject_Transformation.jar"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -21,83 +17,133 @@ pipeline {
 
         stage('Assemble') {
             steps {
-                dir('CA6/Part1/gradle_basic_demo') {
-                    sh 'chmod +x gradlew'
-                    sh './gradlew clean assemble'
+                script {
+                    if (isUnix()) {
+                        sh """
+                        cd ${REPO_PATH_MAC}/gradle_basic_demo
+                        chmod +x gradlew
+                        ./gradlew clean assemble --no-daemon
+                        """
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${REPO_PATH_WSL}/gradle_basic_demo && chmod +x gradlew && ./gradlew clean assemble --no-daemon" """
+                    }
                 }
             }
         }
 
         stage('Test') {
             steps {
-                dir('CA6/Part1/gradle_basic_demo') {
-                    sh './gradlew test'
+                script {
+                    if (isUnix()) {
+                        sh "cd ${REPO_PATH_MAC}/gradle_basic_demo && ./gradlew test"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${REPO_PATH_WSL}/gradle_basic_demo && ./gradlew test --no-daemon" """
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cp ${REPO_PATH_WSL}/gradle_basic_demo/build/test-results/test/*.xml /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/" """
+                    }
                 }
             }
             post {
                 always {
-                    dir('CA6/Part1/gradle_basic_demo') {
-                        junit 'build/test-results/test/*.xml'
+                    junit "*.xml"
+                }
+            }
+        }
+
+        stage('Archive JAR') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh """cp ${REPO_PATH_MAC}/gradle_basic_demo/build/libs/${JAR_NAME} ${WORKSPACE}/"""
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cp -f ${REPO_PATH_WSL}/gradle_basic_demo/build/libs/${JAR_NAME} /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/" """
                     }
                 }
+                archiveArtifacts artifacts: "${JAR_NAME}", fingerprint: true
             }
         }
 
-        stage('Archive') {
+        stage('Provision VMs') {
             steps {
-                dir('CA6/Part1/gradle_basic_demo') {
-                    archiveArtifacts artifacts: 'build/libs/*.jar', fingerprint: true
-                }
-            }
-        }
-
-        stage('Provision Infrastructure') {
-            steps {
-                dir('CA6/Part1') {
-                    // Bring up the VMs using VMware Fusion
-                    sh 'vagrant up --provider=vmware_desktop'
-                    // Validate they are running
-                    sh 'vagrant status'
-                }
-            }
-        }
-
-        stage('Deploy to Blue') {
-            steps {
-                dir('CA6/Part1') {
-                    // Ensure permissions for private keys
-                    sh 'chmod 600 .vagrant/machines/blue/vmware_desktop/private_key || true'
-                    
-                    // Run Ansible playbook targeting 'blue'
-                    sh """
-                        ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} \
-                        --limit blue \
-                        --extra-vars "jar_source=${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/GradleProject_Transformation.jar ansible_ssh_private_key_file=${WORKSPACE}/CA6/Part1/.vagrant/machines/blue/vmware_desktop/private_key"
-                    """
+                script {
+                    if (isUnix()) {
+                        sh "cd ${REPO_PATH_MAC} && vagrant up"
+                    } else {
+                        bat "cd C:\\vagrant_projects\\CA6\\Part1 && vagrant up"
+                    }
                 }
             }
         }
 
         stage('Deploy to Production?') {
             steps {
-                input message: 'Deploy to Production?', ok: 'Deploy'
+                input message: "Deploy to GREEN VM?", ok: "Deploy"
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy GREEN') {
             steps {
-                dir('CA6/Part1') {
-                    // Ensure permissions for private keys
-                    sh 'chmod 600 .vagrant/machines/green/vmware_desktop/private_key || true'
-                    
-                    // Run Ansible playbook targeting 'green'
-                    sh """
-                        ansible-playbook -i ${ANSIBLE_INVENTORY} ${ANSIBLE_PLAYBOOK} \
+                script {
+                    if (isUnix()) {
+                        sh """
+                        cd ${REPO_PATH_MAC}
+                        chmod 600 .vagrant/machines/green/vmware_desktop/private_key || true
+                        ansible-playbook -i ansible/inventory ansible/playbook.yml \
                         --limit green \
-                        --extra-vars "jar_source=${WORKSPACE}/CA6/Part1/gradle_basic_demo/build/libs/GradleProject_Transformation.jar ansible_ssh_private_key_file=${WORKSPACE}/CA6/Part1/.vagrant/machines/green/vmware_desktop/private_key"
-                    """
+                        --extra-vars "jar_source=${REPO_PATH_MAC}/gradle_basic_demo/build/libs/${JAR_NAME} ansible_ssh_private_key_file=${REPO_PATH_MAC}/.vagrant/machines/green/vmware_desktop/private_key"
+                        """
+                    } else {
+                        bat """
+                        wsl bash -lc 'cp "${REPO_PATH_WSL}/.vagrant/machines/green/virtualbox/private_key" "/tmp/private_key"'
+                        wsl bash -lc 'chmod 600 "/tmp/private_key"'
+                        wsl bash -lc 'ansible-playbook -i "${REPO_PATH_WSL}/ansible/inventory" "${REPO_PATH_WSL}/ansible/playbook.yml" --limit green --extra-vars "jar_source=${REPO_PATH_WSL}/gradle_basic_demo/build/libs/${JAR_NAME} ansible_ssh_private_key_file=/tmp/private_key"'
+                        """
+                    }
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment completed successfully."
+            script {
+                try {
+                    def status
+
+                    if (isUnix()) {
+                        status = sh(
+                            script: "curl -s -o /dev/null -w '%{http_code}' http://192.168.56.11:8080",
+                            returnStdout: true
+                        ).trim()
+                    } else {
+                        status = bat(
+                            returnStdout: true,
+                            script: "@C:\\Windows\\System32\\wsl.exe bash -lc 'curl -s -o /dev/null -w \"%%{http_code}\" http://192.168.56.11:8080'"
+                        ).trim()
+                    }
+
+                    echo "HTTP Status: ${status}"
+
+                    if (status == "200") {
+                        echo "Health check successful. Application is running correctly."
+                    } else {
+                        echo "Health check returned HTTP ${status}. Marking build as UNSTABLE."
+                        currentBuild.result = "UNSTABLE"
+                    }
+
+                } catch (err) {
+                    echo "Error performing health check: ${err}"
+                    currentBuild.result = "FAILURE"
+                }
+            }
+        }
+
+        failure {
+            echo "Pipeline failed. Check the logs for details."
+        }
+
+        always {
+            echo "Pipeline finished with status: ${currentBuild.currentResult}"
         }
     }
 }

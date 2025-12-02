@@ -1,28 +1,32 @@
 Vagrant.configure("2") do |config|
-  # Use ARM64 box for Apple Silicon
-  config.vm.box = "spox/ubuntu-arm"
+  # Detect host architecture
+  host_arch = RbConfig::CONFIG['host_cpu']
+
+  if host_arch.include?("arm")
+    config.vm.box = "spox/ubuntu-arm"
+    provider_name = "vmware_desktop"
+  else
+    config.vm.box = "bento/ubuntu-22.04"
+    provider_name = "virtualbox"
+  end
 
   config.vm.define "blue" do |blue|
     blue.vm.network "private_network", ip: "192.168.56.10"
     blue.vm.hostname = "blue"
-    blue.vm.provider "vmware_desktop" do |v|
+    blue.vm.provider provider_name do |v|
       v.memory = "2048"
       v.cpus = 2
-      v.gui = false
-      v.allowlist_verified = true
+      v.gui = false if provider_name == "vmware_desktop"
     end
   end
 
   config.vm.define "green" do |green|
     green.vm.network "private_network", ip: "192.168.56.11"
     green.vm.hostname = "green"
-    green.vm.provider "vmware_desktop" do |v|
+    green.vm.provider provider_name do |v|
       v.memory = "2048"
       v.cpus = 2
-      v.gui = false
-      v.allowlist_verified = true
+      v.gui = false if provider_name == "vmware_desktop"
     end
   end
-
-
 end

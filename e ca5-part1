@@ -1,0 +1,245 @@
+[33mcommit 8998ba6cd2cd92373edc596c583e25d8cab32600[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mCA5/Part1[m[33m, [m[1;33mtag: [m[1;33mca5-part1[m[33m, [m[1;31morigin/CA5/Part1[m[33m)[m
+Author: joaoaraujo1250525 <1250525@isep.ipp.pt>
+Date:   Mon Nov 17 03:19:15 2025 +0000
+
+    Update README.md
+
+[1mdiff --git a/CA5/gradle_basic_demo/.DS_Store b/CA5/Part1/gradle_basic_demo/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/8.9/checksums/checksums.lock b/CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/checksums/checksums.lock[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/8.9/checksums/checksums.lock[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/checksums/checksums.lock[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/8.9/dependencies-accessors/gc.properties b/CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/dependencies-accessors/gc.properties[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/8.9/dependencies-accessors/gc.properties[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/dependencies-accessors/gc.properties[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/8.9/executionHistory/executionHistory.lock b/CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/executionHistory/executionHistory.lock[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/8.9/executionHistory/executionHistory.lock[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/executionHistory/executionHistory.lock[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/8.9/fileChanges/last-build.bin b/CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/fileChanges/last-build.bin[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/8.9/fileChanges/last-build.bin[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/fileChanges/last-build.bin[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/8.9/fileHashes/fileHashes.lock b/CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/fileHashes/fileHashes.lock[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/8.9/fileHashes/fileHashes.lock[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/fileHashes/fileHashes.lock[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/8.9/gc.properties b/CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/gc.properties[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/8.9/gc.properties[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/8.9/gc.properties[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/buildOutputCleanup/buildOutputCleanup.lock b/CA5/Part1/gradle_basic_demo/v1/.gradle/buildOutputCleanup/buildOutputCleanup.lock[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/buildOutputCleanup/buildOutputCleanup.lock[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/buildOutputCleanup/buildOutputCleanup.lock[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/buildOutputCleanup/cache.properties b/CA5/Part1/gradle_basic_demo/v1/.gradle/buildOutputCleanup/cache.properties[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/buildOutputCleanup/cache.properties[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/buildOutputCleanup/cache.properties[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/.gradle/vcs-1/gc.properties b/CA5/Part1/gradle_basic_demo/v1/.gradle/vcs-1/gc.properties[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/.gradle/vcs-1/gc.properties[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/.gradle/vcs-1/gc.properties[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/Dockerfile b/CA5/Part1/gradle_basic_demo/v1/Dockerfile[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/Dockerfile[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/Dockerfile[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/README.md b/CA5/Part1/gradle_basic_demo/v1/README.md[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/README.md[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/README.md[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/backup/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/backup/src/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/main/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/backup/src/main/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/main/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/main/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/main/java/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/main/java/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/App.java b/CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/App.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/App.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/App.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClient.java b/CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClient.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClient.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClient.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClientApp.java b/CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClientApp.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClientApp.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatClientApp.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServer.java b/CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServer.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServer.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServer.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServerApp.java b/CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServerApp.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServerApp.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/main/java/basic_demo/ChatServerApp.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/src/test/java/basic_demo/SimpleTest.java b/CA5/Part1/gradle_basic_demo/v1/backup/src/test/java/basic_demo/SimpleTest.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/src/test/java/basic_demo/SimpleTest.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/src/test/java/basic_demo/SimpleTest.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/backup/zips/app-backup.zip b/CA5/Part1/gradle_basic_demo/v1/backup/zips/app-backup.zip[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/backup/zips/app-backup.zip[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/backup/zips/app-backup.zip[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/bin/main/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/basic_demo/App.class b/CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/App.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/basic_demo/App.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/App.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient$1.class b/CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient$1.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient$1.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient$1.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient.class b/CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatClient.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatClientApp.class b/CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatClientApp.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatClientApp.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatClientApp.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer$Handler.class b/CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer$Handler.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer$Handler.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer$Handler.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer.class b/CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatServer.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatServerApp.class b/CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatServerApp.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/basic_demo/ChatServerApp.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/basic_demo/ChatServerApp.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/main/log4j2.xml b/CA5/Part1/gradle_basic_demo/v1/bin/main/log4j2.xml[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/main/log4j2.xml[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/main/log4j2.xml[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/bin/test/basic_demo/SimpleTest.class b/CA5/Part1/gradle_basic_demo/v1/bin/test/basic_demo/SimpleTest.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/bin/test/basic_demo/SimpleTest.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/bin/test/basic_demo/SimpleTest.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build.gradle b/CA5/Part1/gradle_basic_demo/v1/build.gradle[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build.gradle[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build.gradle[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/App.class b/CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/App.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/App.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/App.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient$1.class b/CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient$1.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient$1.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient$1.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient.class b/CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClient.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClientApp.class b/CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClientApp.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClientApp.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatClientApp.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer$Handler.class b/CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer$Handler.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer$Handler.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer$Handler.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer.class b/CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServer.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServerApp.class b/CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServerApp.class[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServerApp.class[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/classes/java/main/basic_demo/ChatServerApp.class[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/resources/main/log4j2.xml b/CA5/Part1/gradle_basic_demo/v1/build/resources/main/log4j2.xml[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/resources/main/log4j2.xml[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/resources/main/log4j2.xml[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/build/tmp/compileJava/previous-compilation-data.bin b/CA5/Part1/gradle_basic_demo/v1/build/tmp/compileJava/previous-compilation-data.bin[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/build/tmp/compileJava/previous-compilation-data.bin[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/build/tmp/compileJava/previous-compilation-data.bin[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/gradle.properties b/CA5/Part1/gradle_basic_demo/v1/gradle.properties[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/gradle.properties[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/gradle.properties[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.jar b/CA5/Part1/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.jar[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.jar[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.jar[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.properties b/CA5/Part1/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.properties[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.properties[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/gradle/wrapper/gradle-wrapper.properties[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/gradlew b/CA5/Part1/gradle_basic_demo/v1/gradlew[m
+[1mold mode 100755[m
+[1mnew mode 100644[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/gradlew[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/gradlew[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/gradlew.bat b/CA5/Part1/gradle_basic_demo/v1/gradlew.bat[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/gradlew.bat[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/gradlew.bat[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/settings.gradle b/CA5/Part1/gradle_basic_demo/v1/settings.gradle[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/settings.gradle[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/settings.gradle[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/src/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/src/main/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/java/.DS_Store b/CA5/Part1/gradle_basic_demo/v1/src/main/java/.DS_Store[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/java/.DS_Store[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/java/.DS_Store[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/java/basic_demo/App.java b/CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/App.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/java/basic_demo/App.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/App.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClient.java b/CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClient.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClient.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClient.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClientApp.java b/CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClientApp.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClientApp.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatClientApp.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServer.java b/CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServer.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServer.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServer.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServerApp.java b/CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServerApp.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServerApp.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/java/basic_demo/ChatServerApp.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/main/resources/log4j2.xml b/CA5/Part1/gradle_basic_demo/v1/src/main/resources/log4j2.xml[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/main/resources/log4j2.xml[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/main/resources/log4j2.xml[m
+[1mdiff --git a/CA5/gradle_basic_demo/v1/src/test/java/basic_demo/SimpleTest.java b/CA5/Part1/gradle_basic_demo/v1/src/test/java/basic_demo/SimpleTest.java[m
+[1msimilarity index 100%[m
+[1mrename from CA5/gradle_basic_demo/v1/src/test/java/basic_demo/SimpleTest.java[m
+[1mrename to CA5/Part1/gradle_basic_demo/v1/src/test/java/basic_demo/SimpleTest.java[m
+[1mdiff --git a/CA5/gradle_basic_demo/v2/Dockerfile b/CA5/Part1/gradle_basic_d
