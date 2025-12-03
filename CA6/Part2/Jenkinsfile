@@ -1,41 +1,117 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE = "joaoaraujo1250525/sprint_rest_app:${BUILD_NUMBER}"
+                // Above in IMAGE, change the username of docker.
+        APP_DIR_WSL = "/mnt/c/vagrant_projects/CA6/Part2/gradle_transformation"
+        APP_DIR_W = "/mnt/c/vagrant_projects/CA6/Part2"
+        APP_DIR_MAC = "$WORKSPACE/gradle_transformation"
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
+                checkout scm
             }
         }
 
         stage('Assemble') {
             steps {
+                script {
+                    if (isUnix()) {
+                        sh "cd ${APP_DIR_MAC} && chmod +x gradlew && ./gradlew clean assemble --no-daemon"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && chmod +x gradlew && ./gradlew clean assemble --no-daemon" """
+                    }
+                }
             }
         }
 
         stage('Test') {
-            steps {
+            parallel {
+
+                stage('Unit Tests') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh "cd ${APP_DIR_MAC} && ./gradlew test --no-daemon"
+                            } else {
+                                bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && ./gradlew test --no-daemon" """
+                            }
+                        }
+                    }
+                }
+
+                stage('Integration Tests') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh "cd ${APP_DIR_MAC} && ./gradlew integrationTest --no-daemon"
+                            } else {
+                                bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && ./gradlew integrationTest --no-daemon" """
+                            }
+                        }
+                    }
+                }
             }
         }
 
         stage('Tag Docker Image') {
             steps {
+                script {
+                    if (isUnix()) {
+                        sh "cd ${APP_DIR_MAC} && docker build -t ${IMAGE} ."
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && docker build -t ${IMAGE} ." """
+                    }
+                }
             }
         }
 
         stage('Archive') {
             steps {
+                script {
+                    if (isUnix()) {
+                        sh "cp ${APP_DIR_MAC}/Dockerfile ${WORKSPACE}/"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cp ${APP_DIR_WSL}/Dockerfile /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/" """
+                    }
+                }
+                archiveArtifacts artifacts: 'Dockerfile', fingerprint: true
             }
         }
 
         stage('Push Docker Image') {
             steps {
+                script {
+                    if (isUnix()) {
+                        sh "docker push ${IMAGE}"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "docker push ${IMAGE}" """
+                    }
+                }
             }
         }
 
         stage('Deploy') {
             steps {
+                
             }
         }
     }
+
+   post {
+    always {
+        script {
+            if (!isUnix()) {
+                bat "C:\\Windows\\System32\\wsl.exe bash -lc \"mkdir -p /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results && cp -r ${APP_DIR_WSL}/build/test-results/*/*.xml /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results/\""
+            }
+        }
+
+        junit 'test-results/*.xml'
+    }
+}
+
 }
