@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+            }
+        }
+
+        stage('Assemble') {
+            steps {
+            }
+        }
+
+        stage('Test') {
+            steps {
+            }
+        }
+
+        stage('Tag Docker Image') {
+            steps {
+            }
+        }
+
+        stage('Archive') {
+            steps {
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+            }
+        }
+    }
+}
