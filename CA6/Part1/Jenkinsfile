@@ -1,0 +1,150 @@
+pipeline {
+    agent any
+
+    environment {
+        REPO_PATH_WSL = "/mnt/c/vagrant_projects/CA6/Part1"
+        REPO_PATH_MAC = "$WORKSPACE/CA6/Part1"
+        JAR_NAME = "GradleProject_Transformation.jar"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+                //echo "Using workspace source..."
+            }
+        }
+
+        stage('Assemble') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh """
+                        cd ${REPO_PATH_MAC}/gradle_basic_demo
+                        chmod +x gradlew
+                        ./gradlew clean assemble --no-daemon
+                        """
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${REPO_PATH_WSL}/gradle_basic_demo && chmod +x gradlew && ./gradlew clean assemble --no-daemon" """
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "cd ${REPO_PATH_MAC}/gradle_basic_demo && ./gradlew test"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${REPO_PATH_WSL}/gradle_basic_demo && ./gradlew test --no-daemon" """
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cp ${REPO_PATH_WSL}/gradle_basic_demo/build/test-results/test/*.xml /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/" """
+                    }
+                }
+            }
+            post {
+                always {
+                    junit "*.xml"
+                }
+            }
+        }
+
+        stage('Archive JAR') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh """cp ${REPO_PATH_MAC}/gradle_basic_demo/build/libs/${JAR_NAME} ${WORKSPACE}/"""
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cp -f ${REPO_PATH_WSL}/gradle_basic_demo/build/libs/${JAR_NAME} /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/" """
+                    }
+                }
+                archiveArtifacts artifacts: "${JAR_NAME}", fingerprint: true
+            }
+        }
+
+        stage('Provision VMs') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "cd ${REPO_PATH_MAC} && vagrant up"
+                    } else {
+                        bat "cd C:\\vagrant_projects\\CA6\\Part1 && vagrant up"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Production?') {
+            steps {
+                input message: "Deploy to GREEN VM?", ok: "Deploy"
+            }
+        }
+
+        stage('Deploy GREEN') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh """
+                        cd ${REPO_PATH_MAC}
+                        chmod 600 .vagrant/machines/green/vmware_desktop/private_key || true
+                        ansible-playbook -i ansible/inventory ansible/playbook.yml \
+                        --limit green \
+                        --extra-vars "jar_source=${REPO_PATH_MAC}/gradle_basic_demo/build/libs/${JAR_NAME} ansible_ssh_private_key_file=${REPO_PATH_MAC}/.vagrant/machines/green/vmware_desktop/private_key"
+                        """
+                    } else {
+                        bat """
+                        wsl bash -lc 'cp "${REPO_PATH_WSL}/.vagrant/machines/green/virtualbox/private_key" "/tmp/private_key"'
+                        wsl bash -lc 'chmod 600 "/tmp/private_key"'
+                        wsl bash -lc 'ansible-playbook -i "${REPO_PATH_WSL}/ansible/inventory" "${REPO_PATH_WSL}/ansible/playbook.yml" --limit green --extra-vars "jar_source=${REPO_PATH_WSL}/gradle_basic_demo/build/libs/${JAR_NAME} ansible_ssh_private_key_file=/tmp/private_key"'
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment completed successfully."
+            script {
+                try {
+                    def status
+
+                    if (isUnix()) {
+                        status = sh(
+                            script: "curl -s -o /dev/null -w '%{http_code}' http://192.168.56.11:8080",
+                            returnStdout: true
+                        ).trim()
+                    } else {
+                        status = bat(
+                            returnStdout: true,
+                            script: "@C:\\Windows\\System32\\wsl.exe bash -lc 'curl -s -o /dev/null -w \"%%{http_code}\" http://192.168.56.11:8080'"
+                        ).trim()
+                    }
+
+                    echo "HTTP Status: ${status}"
+
+                    if (status == "200") {
+                        echo "Health check successful. Application is running correctly."
+                    } else {
+                        echo "Health check returned HTTP ${status}. Marking build as UNSTABLE."
+                        currentBuild.result = "UNSTABLE"
+                    }
+
+                } catch (err) {
+                    echo "Error performing health check: ${err}"
+                    currentBuild.result = "FAILURE"
+                }
+            }
+        }
+
+        failure {
+            echo "Pipeline failed. Check the logs for details."
+        }
+
+        always {
+            echo "Pipeline finished with status: ${currentBuild.currentResult}"
+        }
+    }
+}

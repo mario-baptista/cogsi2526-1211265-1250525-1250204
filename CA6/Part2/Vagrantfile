@@ -1,0 +1,30 @@
+# Vagrantfile - CA6 Part 2
+Vagrant.configure("2") do |config|
+  host_arch = RbConfig::CONFIG['host_cpu']
+
+  if host_arch.include?("arm")
+    config.vm.box = "spox/ubuntu-arm"
+    provider_name = "vmware_desktop"
+  else
+    config.vm.box = "bento/ubuntu-22.04"
+    provider_name = "virtualbox"
+  end
+
+  config.vm.define "production" do |prod|
+    prod.vm.hostname = "production"
+    prod.vm.network "private_network", ip: "192.168.56.11"
+
+    prod.vm.provider provider_name do |v|
+      v.memory = 2048
+      v.cpus = 2
+      v.gui = false if provider_name == "vmware_desktop"
+    end
+
+    private_key_path = ".vagrant/machines/production/#{provider_name}/private_key"
+    if File.exist?(private_key_path)
+      prod.vm.provision "file", 
+        source: private_key_path,
+        destination: "/home/vagrant/.ssh/id_rsa"
+    end
+  end
+end

@@ -1,0 +1,164 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE = "mariozito/sprint_rest_app:${BUILD_NUMBER}"
+                // Above in IMAGE, change the username of docker.
+        APP_DIR_WSL = "/mnt/c/vagrant_projects/CA6/Part2/gradle_transformation"
+        APP_DIR_W_ANSIBLE = "/mnt/c/vagrant_projects/CA6/Part2"
+        APP_DIR_MAC = "$WORKSPACE/CA6/Part2/gradle_transformation"
+        PATH = "/opt/homebrew/bin:/Users/mariozito/.local/bin:/Applications/Docker.app/Contents/Resources/bin:$PATH"
+        DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1446957657289134353/USVVCXUgWkx7TVwlMJeMsCxze21dSmyuN20hOPVmAD-fQk84cBdMhUAFQ3lnSLgFHmfm"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                //checkout scm
+                echo "Using workspace source..."
+            }
+        }
+
+        stage('Assemble') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "cd ${APP_DIR_MAC} && chmod +x gradlew && ./gradlew clean assemble --no-daemon"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && chmod +x gradlew && ./gradlew clean assemble --no-daemon" """
+                    }
+                }
+            }
+        }
+
+        stage('Test') {
+            parallel {
+
+                stage('Unit Tests') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh "cd ${APP_DIR_MAC} && ./gradlew test --no-daemon"
+                            } else {
+                                bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && ./gradlew test --no-daemon" """
+                            }
+                        }
+                    }
+                }
+
+                stage('Integration Tests') {
+                    steps {
+                        script {
+                            if (isUnix()) {
+                                sh "cd ${APP_DIR_MAC} && ./gradlew integrationTest --no-daemon"
+                            } else {
+                                bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && ./gradlew integrationTest --no-daemon" """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Tag Docker Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "cd ${APP_DIR_MAC} && docker build -t ${IMAGE} ."
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_WSL} && docker build -t ${IMAGE} ." """
+                    }
+                }
+            }
+        }
+
+        stage('Archive') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "cp ${APP_DIR_MAC}/Dockerfile ${WORKSPACE}/"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cp ${APP_DIR_WSL}/Dockerfile /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/" """
+                    }
+                }
+                archiveArtifacts artifacts: 'Dockerfile', fingerprint: true
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        if (isUnix()) {
+                            sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+                            sh "docker push ${IMAGE}"
+                            sh "docker logout"
+                        } else {
+                            bat """C:\\Windows\\System32\\wsl.exe bash -lc "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin && docker push ${IMAGE} && docker logout" """
+                        }
+                    }
+                }
+            }
+        }
+
+         stage('Deploy') {
+             when {
+                 branch 'main'
+             }
+             steps {
+                 script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        if (isUnix()) {
+                            sh "cd ${WORKSPACE}/CA6/Part2/ansible && ansible-playbook -i inventory deploy_docker.yml --extra-vars 'build_number=${BUILD_NUMBER} docker_username=${DOCKER_USERNAME} docker_password=${DOCKER_PASSWORD}'"
+                        } else {
+                            bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_W_ANSIBLE}/ansible && ansible-playbook -i inventory deploy_docker.yml --extra-vars 'build_number=${BUILD_NUMBER} docker_username=${DOCKER_USERNAME} docker_password=${DOCKER_PASSWORD}'" """
+                        }
+                    }
+                 }
+             }
+         }
+    }
+
+    post {
+        always {
+            script {
+                if (isUnix()) {
+                    sh "mkdir -p test-results && cp -r ${APP_DIR_MAC}/build/test-results/*/*.xml test-results/ || true"
+                } else {
+                    bat "C:\\Windows\\System32\\wsl.exe bash -lc \"mkdir -p /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results && cp -r ${APP_DIR_WSL}/build/test-results/*/*.xml /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results/\""
+                }
+            }
+
+            junit 'test-results/*.xml'
+        }
+        success {
+            script {
+                if (isUnix()) {
+                    sh "curl -X POST -H 'Content-Type: application/json' -d '{\"content\": \"✅ Build Succeeded: ${JOB_NAME} - ${env.BUILD_URL}\"}' ${env.DISCORD_WEBHOOK}"
+                } else {
+                    bat """C:\\Windows\\System32\\wsl.exe bash -lc "curl -X POST -H 'Content-Type: application/json' -d '{\\"content\\": \\"✅ Build Succeeded: ${JOB_NAME} - ${env.BUILD_URL}\\"}' ${env.DISCORD_WEBHOOK}" """
+                }
+            }
+        }
+        failure {
+            script {
+                if (isUnix()) {
+                    sh "curl -X POST -H 'Content-Type: application/json' -d '{\"content\": \"❌ Build Failed: ${JOB_NAME} - ${env.BUILD_URL}\"}' ${env.DISCORD_WEBHOOK}"
+                } else {
+                    bat """C:\\Windows\\System32\\wsl.exe bash -lc "curl -X POST -H 'Content-Type: application/json' -d '{\\"content\\": \\"❌ Build Failed: ${JOB_NAME} - ${env.BUILD_URL}\\"}' ${env.DISCORD_WEBHOOK}" """
+                }
+            }
+        }
+        unstable {
+            script {
+                if (isUnix()) {
+                    sh "curl -X POST -H 'Content-Type: application/json' -d '{\"content\": \"⚠️ Build Unstable: ${JOB_NAME} - ${env.BUILD_URL}\"}' ${env.DISCORD_WEBHOOK}"
+                } else {
+                    bat """C:\\Windows\\System32\\wsl.exe bash -lc "curl -X POST -H 'Content-Type: application/json' -d '{\\"content\\": \\"⚠️ Build Unstable: ${JOB_NAME} - ${env.BUILD_URL}\\"}' ${env.DISCORD_WEBHOOK}" """
+                }
+            }
+        }
+    }
+
+}

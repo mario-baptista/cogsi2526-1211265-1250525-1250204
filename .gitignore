@@ -1,0 +1,11 @@
+.vagrant/
+build/
+.gradle/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+!gradle-wrapper.jar

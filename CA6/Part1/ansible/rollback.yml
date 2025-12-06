@@ -1,0 +1,64 @@
+---
+- name: Roll back to a stable version on GREEN VM
+  hosts: green
+  become: yes
+
+  vars:
+    jenkins_url: "http://192.168.56.1:8080"
+    jenkins_job: "PIPELINE3"
+    artifact_name: "GradleProject_Transformation.jar"  
+    rollback_build: "19"        
+    jenkins_user: "joaoaraujo1250525"  
+    jenkins_token: "1190fe1385012481a56025088c376e6c50"
+    deploy_dir: "/opt/spring-app"
+    service_name: "spring-app.service"
+    health_url: "http://192.168.56.11:8080"
+
+  tasks:
+
+    - name: Download stable artifact from Jenkins
+      get_url:
+        url: "{{ jenkins_url }}/job/{{ jenkins_job }}/{{ rollback_build }}/artifact/{{ artifact_name }}"
+        dest: "/tmp/rollback.jar"
+        url_username: "{{ jenkins_user }}"
+        url_password: "{{ jenkins_token }}"
+        mode: "0755"
+
+    - name: Stop application service
+      ansible.builtin.systemd:
+        name: "{{ service_name }}"
+        state: stopped
+      ignore_errors: yes
+
+    - name: Remove current application JAR
+      file:
+        path: "{{ deploy_dir }}/{{ artifact_name }}"
+        state: absent
+
+    - name: Deploy stable version JAR
+      copy:
+        src: "/tmp/rollback.jar"
+        dest: "{{ deploy_dir }}/{{ artifact_name }}"
+        mode: '0755'
+        remote_src: yes
+
+
+    - name: Restart application service
+      ansible.builtin.systemd:
+        name: "{{ service_name }}"
+        enabled: yes
+        state: restarted
+
+    - name: Wait for health check OK
+      uri:
+        url: "{{ health_url }}"
+        method: GET
+        status_code: 200
+      register: health_check
+      retries: 15
+      delay: 4
+      until: health_check.status == 200
+
+    - name: Rollback confirmation
+      debug:
+        msg: "Rollback SUCCESS: Application running stable version build {{ rollback_build }}!"
