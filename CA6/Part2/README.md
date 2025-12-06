@@ -37,6 +37,9 @@ Ansible is used to install Docker on the VM and deploy the application container
 4.  **Manage Container**:
     - Forcefully stops and removes any existing container to ensure a clean deploy.
     - Starts the new container on port **8081** (mapped to internal port 8080).
+5.  **Health Checks**:
+    - **Wait for Port**: Waits up to 120 seconds for port `8081` to become available.
+    - **Verify Endpoint**: Polls `http://localhost:8081/` until it returns a `200 OK` status, ensuring the application is fully ready to handle requests.
 
 ```yaml
 - name: Deploy Docker App
@@ -62,6 +65,22 @@ Ansible is used to install Docker on the VM and deploy the application container
         ports:
           - "{{ app_port }}:8080"
         restart_policy: always
+
+    - name: Wait for application to be ready
+      wait_for:
+        port: "{{ app_port }}"
+        delay: 10
+        timeout: 120
+
+    - name: Verify application health check
+      uri:
+        url: "http://localhost:{{ app_port }}/"
+        status_code: 200
+        return_content: no
+      register: health_check
+      until: health_check.status == 200
+      retries: 10
+      delay: 5
 ```
 
 ## Jenkins Pipeline
