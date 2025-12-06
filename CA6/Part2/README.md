@@ -31,10 +31,10 @@ end
 ### Ansible
 
 Ansible is used to install Docker on the VM and deploy the application container. The `deploy_docker.yml` playbook performs the following tasks:
-
 1.  **Install Docker**: Dynamically detects the OS release (e.g., Ubuntu Jammy vs. Focal) to configure the correct Docker repositories and install `docker-ce`.
-2.  **Pull Image**: Pulls the specific tagged image from Docker Hub (`mariozito/sprint_rest_app:${BUILD_NUMBER}`).
-3.  **Manage Container**:
+2.  **Log into Docker Hub**: Authenticates using credentials passed from Jenkins (`docker_username`, `docker_password`) to allow pulling images from private repositories.
+3.  **Pull Image**: Pulls the specific tagged image from Docker Hub (`mariozito/sprint_rest_app:${BUILD_NUMBER}`).
+4.  **Manage Container**:
     - Forcefully stops and removes any existing container to ensure a clean deploy.
     - Starts the new container on port **8081** (mapped to internal port 8080).
 
@@ -48,6 +48,11 @@ Ansible is used to install Docker on the VM and deploy the application container
 
   tasks:
     # ... Docker Installation steps ...
+
+    - name: Log into Docker Hub
+      docker_login:
+        username: "{{ docker_username }}"
+        password: "{{ docker_password }}"
 
     - name: Run Docker container
       docker_container:
@@ -104,12 +109,19 @@ stage('Push Docker Image') {
 ```
 
 ### 7. Deploy
-Deploys the Docker container to the **production** VM using Ansible. It passes the current `BUILD_NUMBER` to ensure the correct image version is deployed.
+Deploys the Docker container to the **production** VM using Ansible. This stage is **conditional** and only executes when the pipeline runs on the `main` branch.
+
+It securely passes Docker Hub credentials and the `BUILD_NUMBER` to the Ansible playbook, ensuring the correct image version is pulled from the private repository.
 
 ```groovy
 stage('Deploy') {
+    when {
+        branch 'main'
+    }
     steps {
-        sh "ansible-playbook -i inventory deploy_docker.yml --extra-vars 'build_number=${BUILD_NUMBER}'"
+        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+            sh "ansible-playbook -i inventory deploy_docker.yml --extra-vars 'build_number=${BUILD_NUMBER} docker_username=${DOCKER_USERNAME} docker_password=${DOCKER_PASSWORD}'"
+        }
     }
 }
 ```

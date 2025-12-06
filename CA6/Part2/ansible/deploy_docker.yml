@@ -75,6 +75,10 @@
         name: vagrant
         groups: docker
         append: yes
+    - name: Log into Docker Hub
+      docker_login:
+        username: "{{ docker_username }}"
+        password: "{{ docker_password }}"
 
     - name: Pull Docker image
       docker_image:
