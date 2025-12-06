@@ -7,7 +7,7 @@ pipeline {
         APP_DIR_WSL = "/mnt/c/vagrant_projects/CA6/Part2/gradle_transformation"
         APP_DIR_W_ANSIBLE = "/mnt/c/vagrant_projects/CA6/Part2"
         APP_DIR_MAC = "$WORKSPACE/CA6/Part2/gradle_transformation"
-        PATH = "/opt/homebrew/bin:$PATH"
+        PATH = "/opt/homebrew/bin:/Applications/Docker.app/Contents/Resources/bin:$PATH"
     }
 
     stages {
