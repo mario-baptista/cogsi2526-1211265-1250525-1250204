@@ -8,6 +8,7 @@ pipeline {
         APP_DIR_W_ANSIBLE = "/mnt/c/vagrant_projects/CA6/Part2"
         APP_DIR_MAC = "$WORKSPACE/CA6/Part2/gradle_transformation"
         PATH = "/opt/homebrew/bin:/Users/mariozito/.local/bin:/Applications/Docker.app/Contents/Resources/bin:$PATH"
+        DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1446957657289134353/USVVCXUgWkx7TVwlMJeMsCxze21dSmyuN20hOPVmAD-fQk84cBdMhUAFQ3lnSLgFHmfm"
     }
 
     stages {
@@ -119,18 +120,45 @@ pipeline {
          }
     }
 
-   post {
-    always {
-        script {
-            if (isUnix()) {
-                sh "mkdir -p test-results && cp -r ${APP_DIR_MAC}/build/test-results/*/*.xml test-results/ || true"
-            } else {
-                bat "C:\\Windows\\System32\\wsl.exe bash -lc \"mkdir -p /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results && cp -r ${APP_DIR_WSL}/build/test-results/*/*.xml /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results/\""
+    post {
+        always {
+            script {
+                if (isUnix()) {
+                    sh "mkdir -p test-results && cp -r ${APP_DIR_MAC}/build/test-results/*/*.xml test-results/ || true"
+                } else {
+                    bat "C:\\Windows\\System32\\wsl.exe bash -lc \"mkdir -p /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results && cp -r ${APP_DIR_WSL}/build/test-results/*/*.xml /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results/\""
+                }
+            }
+
+            junit 'test-results/*.xml'
+        }
+        success {
+            script {
+                if (isUnix()) {
+                    sh "curl -X POST -H 'Content-Type: application/json' -d '{\"content\": \"✅ Build Succeeded: ${JOB_NAME} - ${env.BUILD_URL}\"}' ${env.DISCORD_WEBHOOK}"
+                } else {
+                    bat """C:\\Windows\\System32\\wsl.exe bash -lc "curl -X POST -H 'Content-Type: application/json' -d '{\\"content\\": \\"✅ Build Succeeded: ${JOB_NAME} - ${env.BUILD_URL}\\"}' ${env.DISCORD_WEBHOOK}" """
+                }
             }
         }
-
-        junit 'test-results/*.xml'
+        failure {
+            script {
+                if (isUnix()) {
+                    sh "curl -X POST -H 'Content-Type: application/json' -d '{\"content\": \"❌ Build Failed: ${JOB_NAME} - ${env.BUILD_URL}\"}' ${env.DISCORD_WEBHOOK}"
+                } else {
+                    bat """C:\\Windows\\System32\\wsl.exe bash -lc "curl -X POST -H 'Content-Type: application/json' -d '{\\"content\\": \\"❌ Build Failed: ${JOB_NAME} - ${env.BUILD_URL}\\"}' ${env.DISCORD_WEBHOOK}" """
+                }
+            }
+        }
+        unstable {
+            script {
+                if (isUnix()) {
+                    sh "curl -X POST -H 'Content-Type: application/json' -d '{\"content\": \"⚠️ Build Unstable: ${JOB_NAME} - ${env.BUILD_URL}\"}' ${env.DISCORD_WEBHOOK}"
+                } else {
+                    bat """C:\\Windows\\System32\\wsl.exe bash -lc "curl -X POST -H 'Content-Type: application/json' -d '{\\"content\\": \\"⚠️ Build Unstable: ${JOB_NAME} - ${env.BUILD_URL}\\"}' ${env.DISCORD_WEBHOOK}" """
+                }
+            }
+        }
     }
-}
 
 }
