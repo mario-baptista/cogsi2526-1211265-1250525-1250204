@@ -88,10 +88,14 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    if (isUnix()) {
-                        sh "docker push ${IMAGE}"
-                    } else {
-                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "docker push ${IMAGE}" """
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                        if (isUnix()) {
+                            sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
+                            sh "docker push ${IMAGE}"
+                            sh "docker logout"
+                        } else {
+                            bat """C:\\Windows\\System32\\wsl.exe bash -lc "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin && docker push ${IMAGE} && docker logout" """
+                        }
                     }
                 }
             }
