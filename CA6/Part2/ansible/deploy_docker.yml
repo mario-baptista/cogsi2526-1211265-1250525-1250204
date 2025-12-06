@@ -24,6 +24,18 @@
         url: https://download.docker.com/linux/ubuntu/gpg
         state: present
 
+    - name: Remove incorrect Jammy Docker repository (cleanup)
+      apt_repository:
+        repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu jammy stable
+        state: absent
+      when: ansible_architecture == "aarch64"
+
+    - name: Remove incorrect Jammy Docker repository (x86_64) (cleanup)
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
+        state: absent
+      when: ansible_architecture == "x86_64"
+
     - name: Add Docker repository
       apt_repository:
         repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
