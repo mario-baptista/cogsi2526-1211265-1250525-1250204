@@ -5,7 +5,7 @@
   vars:
     image_name: "mariozito/sprint_rest_app"
     container_name: "sprint_rest_app"
-    app_port: 8080
+    app_port: 8081
 
   tasks:
     - name: Install Docker dependencies
@@ -86,6 +86,7 @@
       docker_container:
         name: "{{ container_name }}"
         state: absent
+        force_kill: yes
 
     - name: Run Docker container
       docker_container:
