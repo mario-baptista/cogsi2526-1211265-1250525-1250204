@@ -125,3 +125,24 @@ stage('Deploy') {
     }
 }
 ```
+
+### 8. Post Actions
+The pipeline includes a `post` section that handles notifications based on the build result.
+
+- **Success**: Sends a "Build Succeeded" message to Discord.
+- **Failure**: Sends a "Build Failed" message to Discord.
+- **Unstable**: Sends a "Build Unstable" message to Discord.
+
+These notifications use a specific **Discord Webhook URL** which is stored securely in Jenkins credentials with the ID `discord-webhook`. The pipeline retrieves this credential and sends a formatted JSON payload using `curl`.
+
+```groovy
+post {
+    success {
+        script {
+             // ... curl command to send success message ...
+        }
+    }
+    // ... failure and unstable blocks ...
+}
+```
+![Discord Webhook](image.png)
