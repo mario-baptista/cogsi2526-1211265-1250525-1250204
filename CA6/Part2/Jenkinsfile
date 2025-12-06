@@ -6,7 +6,7 @@ pipeline {
                 // Above in IMAGE, change the username of docker.
         APP_DIR_WSL = "/mnt/c/vagrant_projects/CA6/Part2/gradle_transformation"
         APP_DIR_W_ANSIBLE = "/mnt/c/vagrant_projects/CA6/Part2"
-        APP_DIR_MAC = "$WORKSPACE/gradle_transformation"
+        APP_DIR_MAC = "$WORKSPACE/CA6/Part2/gradle_transformation"
     }
 
     stages {
@@ -98,7 +98,7 @@ pipeline {
 
     //     stage('Deploy') {
     //         steps {
-                
+    //             
     //         }
     //     }
     }
@@ -106,7 +106,9 @@ pipeline {
    post {
     always {
         script {
-            if (!isUnix()) {
+            if (isUnix()) {
+                sh "mkdir -p test-results && cp -r ${APP_DIR_MAC}/build/test-results/*/*.xml test-results/ || true"
+            } else {
                 bat "C:\\Windows\\System32\\wsl.exe bash -lc \"mkdir -p /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results && cp -r ${APP_DIR_WSL}/build/test-results/*/*.xml /mnt/c/ProgramData/Jenkins/.jenkins/workspace/${JOB_NAME}/test-results/\""
             }
         }
