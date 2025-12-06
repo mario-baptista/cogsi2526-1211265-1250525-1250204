@@ -97,11 +97,17 @@ pipeline {
             }
         }
 
-    //     stage('Deploy') {
-    //         steps {
-    //             
-    //         }
-    //     }
+         stage('Deploy') {
+             steps {
+                 script {
+                    if (isUnix()) {
+                        sh "cd ${WORKSPACE}/CA6/Part2/ansible && ansible-playbook -i inventory deploy_docker.yml --extra-vars 'build_number=${BUILD_NUMBER}'"
+                    } else {
+                        bat """C:\\Windows\\System32\\wsl.exe bash -lc "cd ${APP_DIR_W_ANSIBLE}/ansible && ansible-playbook -i inventory deploy_docker.yml --extra-vars 'build_number=${BUILD_NUMBER}'" """
+                    }
+                 }
+             }
+         }
     }
 
    post {

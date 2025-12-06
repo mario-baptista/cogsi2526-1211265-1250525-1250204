@@ -1,0 +1,85 @@
+---
+- name: Deploy Docker App
+  hosts: production
+  become: yes
+  vars:
+    image_name: "mariozito/sprint_rest_app"
+    container_name: "sprint_rest_app"
+    app_port: 8080
+
+  tasks:
+    - name: Install Docker dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - gnupg
+        state: present
+        update_cache: yes
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+      when: ansible_architecture == "aarch64"
+
+    - name: Add Docker repository (x86_64)
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+      when: ansible_architecture == "x86_64"
+
+    - name: Install Docker
+      apt:
+        name: docker-ce
+        state: present
+        update_cache: yes
+
+    - name: Install pip
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Install Docker SDK for Python
+      pip:
+        name: docker
+        state: present
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add vagrant user to docker group
+      user:
+        name: vagrant
+        groups: docker
+        append: yes
+
+    - name: Pull Docker image
+      docker_image:
+        name: "{{ image_name }}:{{ build_number }}"
+        source: pull
+        force_source: yes
+
+    - name: Stop running container
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+    - name: Run Docker container
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_name }}:{{ build_number }}"
+        state: started
+        ports:
+          - "{{ app_port }}:8080"
+        restart_policy: always
