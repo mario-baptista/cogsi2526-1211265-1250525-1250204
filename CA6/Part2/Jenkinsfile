@@ -90,6 +90,8 @@ pipeline {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                         if (isUnix()) {
+                            sh "echo \$DOCKER_PASSWORD"
+                            sh "echo \$DOCKER_USERNAME"
                             sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
                             sh "docker push ${IMAGE}"
                             sh "docker logout"
