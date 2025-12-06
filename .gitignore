@@ -8,3 +8,4 @@ build/
 *.zip
 *.tar.gz
 *.rar
+!gradle-wrapper.jar
