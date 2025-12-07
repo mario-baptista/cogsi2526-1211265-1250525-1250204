@@ -1,0 +1,162 @@
+stages:
+  - build
+  - test
+  - provision
+  - deploy_blue
+  - manual_approval
+  - deploy_green
+  - verify
+  - tag
+  - notify
+  - rollback 
+variables:
+   APP_DIR: "CA6/Part1"
+  GRADLE_DIR: "$APP_DIR/gradle_basic_demo"
+  APP_JAR_PATH: "$GRADLE_DIR/build/libs/basic_demo-0.1.0.jar"
+  ANSIBLE_INVENTORY: "$APP_DIR/inventory.ini"
+  ANSIBLE_PLAYBOOK: "$APP_DIR/ansible/playbook.yml"
+
+
+assemble_app:
+  stage: build
+  image: gradle:jdk17-focal 
+  script:
+    - echo "Executing Assemble Stage..."
+    - cd $GRADLE_DIR
+    - chmod +x gradlew
+    - ./gradlew clean assemble
+   artifacts:
+    paths:
+      - $APP_JAR_PATH
+    expire_in: 1 week
+
+
+run_tests:
+  stage: test
+  image: gradle:jdk17-focal
+  script:
+    - echo "Executing Unit Test Stage..."
+    - cd $GRADLE_DIR
+    - ./gradlew test
+  artifacts:
+    when: always
+    reports:
+      junit: $GRADLE_DIR/build/test-results/test/*.xml
+
+
+provision_vms:
+  stage: provision
+   tags:
+    - shell-runner-host
+  script:
+    - echo "Provisioning Vagrant VMs (blue & green)..."
+    - cd $APP_DIR
+    - vagrant up --provider=vmware_desktop # Bring up the infrastructure
+  only:
+    - main
+
+deploy_to_blue:
+  stage: deploy_blue
+  tags:
+    - shell-runner-host
+  script:
+    - echo "Deploying to Blue VM (Staging) using Ansible..."
+    - ansible-playbook -i $ANSIBLE_INVENTORY $ANSIBLE_PLAYBOOK \
+      --limit blue \
+      --extra-vars "jar_source=$APP_JAR_PATH"
+  dependencies:
+    - assemble_app
+    - provision_vms
+
+
+gate_to_prod:
+  stage: manual_approval
+   when: manual
+  allow_failure: false
+  script:
+    - echo "Manual approval received. Proceeding to production deployment."
+
+deploy_to_green:
+  stage: deploy_green
+  tags:
+    - shell-runner-host
+  script:
+    - echo "Deploying to Green VM (Production) using Ansible..."
+    - ansible-playbook -i $ANSIBLE_INVENTORY $ANSIBLE_PLAYBOOK \
+      --limit green \
+      --extra-vars "jar_source=$APP_JAR_PATH"
+  dependencies:
+    - assemble_app
+    - gate_to_prod 
+
+
+health_check:
+  stage: verify
+  tags:
+    - shell-runner-host
+  script:
+    - echo "Running automated health checks on Green VM (Production)..."
+    - |
+      sleep 15 
+      curl --fail http://192.168.56.11:8080/greeting
+      echo "Health check passed! Application is running as expected."
+  dependencies:
+    - deploy_to_green
+
+
+create_tag:
+  stage: tag
+  # Only runs if all preceding jobs succeed
+  when: on_success
+  script:
+    - echo "Creating stable build tag..."
+    # Use the pipeline ID to create a unique, consistent tag
+    - TAG_NAME="stable-v1.${CI_PIPELINE_ID}"
+    - echo "Tagging commit $CI_COMMIT_SHA with: $TAG_NAME"
+    - git tag $TAG_NAME $CI_COMMIT_SHA
+    - git push origin $TAG_NAME # Push the tag to the repository
+  except:
+    - tags 
+
+notify_status:
+  stage: notify
+  when: always
+  script:
+    - echo "Pipeline execution completed."
+    - echo "Final Status: $CI_JOB_STATUS"
+    - |
+      if [ "$CI_JOB_STATUS" == "success" ]; then
+        echo "The application was successfully deployed to Production (Green VM)."
+      else
+        echo "Pipeline failed. Check previous stages for errors."
+      fi
+
+
+rollback_to_stable:
+  stage: rollback
+  tags:
+    - shell-runner-host
+  when: manual
+   variables:
+    ROLLBACK_TAG: "" 
+  script:
+    - echo "Starting Rollback to stable tag: $ROLLBACK_TAG"
+    
+    
+       - |
+      curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+      "https://<your_gitlab_host>/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$ROLLBACK_TAG/download?job=assemble_app" \
+      --output old_app.zip
+      unzip -j old_app.zip $APP_JAR_PATH -d /tmp/rollback_dir # Extract only the JAR
+      
+       - echo "Deploying archived artifact $ROLLBACK_TAG to Green VM..."
+    - ansible-playbook -i $ANSIBLE_INVENTORY $ANSIBLE_PLAYBOOK \
+      --limit green \
+      --extra-vars "jar_source=/tmp/rollback_dir/basic_demo-0.1.0.jar"
+      
+      - echo "Running health checks on rolled-back version..."
+    - sleep 15
+    - curl --fail http://192.168.56.11:8080/greeting
+    - echo "Rollback successful and verified."
+  only:
+    - main
