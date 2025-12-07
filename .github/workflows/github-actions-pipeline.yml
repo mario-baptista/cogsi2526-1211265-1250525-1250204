@@ -31,7 +31,7 @@ jobs:
       run: ./gradlew test
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: spring-boot-app
         path: CA6/Part1/gradle_basic_demo/build/libs/*.jar
