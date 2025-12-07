@@ -51,7 +51,7 @@ provision_vms:
   script:
     - echo "Provisioning Vagrant VMs (blue & green)..."
     - cd $APP_DIR
-    - vagrant up --provider=vmware_desktop # Bring up the infrastructure
+    - vagrant up --provider=vmware_desktop 
   only:
     - main
 
@@ -105,16 +105,14 @@ health_check:
 
 
 create_tag:
-  stage: tag
-  # Only runs if all preceding jobs succeed
+  stage: tag 
   when: on_success
   script:
     - echo "Creating stable build tag..."
-    # Use the pipeline ID to create a unique, consistent tag
     - TAG_NAME="stable-v1.${CI_PIPELINE_ID}"
     - echo "Tagging commit $CI_COMMIT_SHA with: $TAG_NAME"
     - git tag $TAG_NAME $CI_COMMIT_SHA
-    - git push origin $TAG_NAME # Push the tag to the repository
+    - git push origin $TAG_NAME 
   except:
     - tags 
 
@@ -147,7 +145,7 @@ rollback_to_stable:
       curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
       "https://<your_gitlab_host>/api/v4/projects/$CI_PROJECT_ID/jobs/artifacts/$ROLLBACK_TAG/download?job=assemble_app" \
       --output old_app.zip
-      unzip -j old_app.zip $APP_JAR_PATH -d /tmp/rollback_dir # Extract only the JAR
+      unzip -j old_app.zip $APP_JAR_PATH -d /tmp/rollback_dir 
       
        - echo "Deploying archived artifact $ROLLBACK_TAG to Green VM..."
     - ansible-playbook -i $ANSIBLE_INVENTORY $ANSIBLE_PLAYBOOK \
