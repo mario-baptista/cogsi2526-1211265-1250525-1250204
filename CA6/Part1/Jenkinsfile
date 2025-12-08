@@ -12,7 +12,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                //echo "Using workspace source..."
             }
         }
 

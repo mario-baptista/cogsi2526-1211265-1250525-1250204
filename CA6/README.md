@@ -1,5 +1,10 @@
 # CA6 - Jenkins
 
+In this work, a complete CI/CD solution was developed with the goal of automating the entire continuous integration, delivery, and deployment process, ensuring faster, more reliable, and controlled updates of the application throughout its lifecycle. The project is divided into two distinct parts. 
+
+
+In Part 1, the application is compiled and distributed directly to two virtual machines. In Part 2, the same application is packaged in a Docker container, with automated publishing and configured with Ansible. Finally, the alternative solution using GitHub Actions is presented, allowing comparison between different CI/CD automation solutions.
+
 ## Part 1
 
 The main objective of this first part consists of implementing a CI/CD pipeline, using Jenkins, that automates the entire process of creating infrastructure and deploying a Spring Boot application (Building REST Services with Spring), compiled via Gradle.
@@ -611,7 +616,7 @@ Jenkinsfile now features several important improvements:
 
 Additionally, because Jenkins may be running on different operating systems (Linux/macOS or Windows with WSL), the pipeline includes conditional checks with *isUnix()* to ensure the right commands are executed in each environment. This way, the project remains fully compatible between different development machines in the group.
 
-Logo no início do Jenkinsfile são definidas variáveis de ambiente essenciais para garantir que a pipeline funciona corretamente em diferentes sistemas operativos e que a imagem Docker é construída com um nome e versão consistentes:
+At the beginning of the Jenkinsfile, essential environment variables are defined to ensure that the pipeline works correctly on different operating systems and that the Docker image is built with a consistent name and version:
 
 ```groovy
 environment {
@@ -620,6 +625,9 @@ environment {
     APP_DIR_MAC = "$WORKSPACE/gradle_transformation"
 }
 ```
+
+Above in the IMAGE attribute, it is necessary to change the user name which is before the name of the image itself and the tag, if the name of the docker user account is different, this can happen when changing host machines and another individual working on the project.
+
 
 What each variable does:
 | Variable        | Function                                                                                                                  |
@@ -713,7 +721,7 @@ The code block corresponding to this stage is as follows:
         }
 ```
 
-Below is the list of two classes within payroll where you can see that the tests did not fail.
+Below is the list of two classes within payroll package where you can see that the tests did not fail.
 
 ![alt text](image-10.png)
 
@@ -759,6 +767,7 @@ This level of testing is essential to quickly detect logical errors that could l
 ### **Integration Tests in the EmployeeUnitTest class**
 
 Integration tests validate interoperability between real components of the Spring Boot application. Essentially, they facilitate communication between Spring Boot modules, and persistence issues, Spring context failures, or even configuration problems are detected.
+
 ```java
 package payroll;
 
