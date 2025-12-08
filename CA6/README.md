@@ -142,7 +142,7 @@ handlers:
       daemon_reload: yes
 ```
 
-The code in its entirety can be found in the file *[playbook.yml](./CA6/Part1/ansible/playbook.yml)*
+The code in its entirety can be found in the file *[playbook.yml](./Part1/ansible/playbook.yml)*
 
 ## Jenkins Pipeline 
 
@@ -336,7 +336,7 @@ This ensures the correct SSH key is located and securely handled in both cases.
 
 - Waiting for the app to become fully available (port 8080).
 
-The code in its entirety can be found in the file *[Jenkinsfile](./CA6/Part1/Jenkinsfile)*
+The code in its entirety can be found in the file *[Jenkinsfile](./Part1/Jenkinsfile)*
 
 The image below shows proof that the Jenkins pipeline was successfully executed and completed in its entirety.
 ![alt text](image-1.png)
@@ -426,7 +426,7 @@ This file will be used to replace the problematic version that was running.
         msg: "Rollback success!"
 ```
 
-The rollback playbook guarantees a quick and safe return to a previous, stable version of the application, minimizing potential service interruptions and negative impacts for the user. The code in its entirety can be found in the file *[rollback.yml](./CA6/Part1/ansible/rollback.yml)*
+The rollback playbook guarantees a quick and safe return to a previous, stable version of the application, minimizing potential service interruptions and negative impacts for the user. The code in its entirety can be found in the file *[rollback.yml](./Part1/ansible/rollback.yml)*
 
 ### Demonstration of Rollback working
 
