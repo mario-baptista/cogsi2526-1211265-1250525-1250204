@@ -633,8 +633,7 @@ What each variable does:
 | Variable        | Function                                                                                                                  |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | **IMAGE**       | Defines the name and tag of the Docker image. Uses `${BUILD_NUMBER}` for automatic versioning on each pipeline execution. |
-| **APP_DIR_WSL** | Path to the project when Jenkins is running on Windows using WSL.                                                         |
-| **APP_DIR_W**   | Base project path on Windows for executing commands directly on the host.                                                 |
+| **APP_DIR_WSL** | Path to the project when Jenkins is running on Windows using WSL.                                                         |                                            |
 | **APP_DIR_MAC** | Project path when Jenkins is running natively on Linux/macOS.                                                             |
 
 
