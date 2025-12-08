@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         IMAGE = "mariozito/sprint_rest_app:${BUILD_NUMBER}"
-                // Above in IMAGE, change the username of docker.
         APP_DIR_WSL = "/mnt/c/vagrant_projects/CA6/Part2/gradle_transformation"
         APP_DIR_W_ANSIBLE = "/mnt/c/vagrant_projects/CA6/Part2"
         APP_DIR_MAC = "$WORKSPACE/CA6/Part2/gradle_transformation"

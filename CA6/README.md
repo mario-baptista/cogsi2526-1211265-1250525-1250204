@@ -896,8 +896,79 @@ Inside the VM, the container is started ensuring:
             }
         }
 ```
+This code was created and can be found in its entirety at *[Jenkinsfile](./Part2/Jenkinsfile)*.
 
-### 8. Post Actions
+### 8. Ansible Playbook
+
+The playbook below defines all server-side automation required to ensure a clean and functional deployment:
+```yaml
+- name: Deploy Docker App
+  hosts: production
+  become: yes
+```
+
+**8.1. Install Docker Requirements**
+
+The first set of tasks ensures the VM has the necessary software:
+
+- Install Docker dependencies, Docker CE, and Docker SDK for Python;
+
+- Add the correct Docker repository depending on CPU architecture (supports both x86_64 and ARM hosts);
+
+- Ensure Docker daemon is enabled and running;
+
+- Allow the vagrant user to run Docker without sudo.
+
+These actions fully prepare the VM to run and manage containers
+
+**8.2. Authenticate & Pull the Latest Image**
+Before deployment, Ansible connects to Docker Hub using credentials from Jenkins:
+```yaml
+docker_login:
+  username: "{{ docker_username }}"
+  password: "{{ docker_password }}"
+```
+
+Then it forces a fresh image download to ensure the most recent version is deployed:
+
+```yaml
+docker_image:
+  name: "{{ image_name }}:{{ build_number }}"
+  source: pull
+  force_source: yes
+```
+
+**8.3. Replace Running Container**
+
+To guarantee zero-conflict deployment any existing container with the same name is removed, the new container is created from the freshly pulled image and port 8081 on the VM maps to port 8080 inside the container.
+```yaml
+docker_container:
+  name: "{{ container_name }}"
+  image: "{{ image_name }}:{{ build_number }}"
+  state: started
+  ports:
+    - "{{ app_port }}:8080"
+  restart_policy: always
+```
+
+**8.4. Application Readiness & Health Validation**
+
+Finally, Ansible verifies that the application is fully operational:
+
+- Waits until port 8081 is up
+- Performs a HTTP request to the root endpoint /
+- Retries until a valid 200 OK response is received
+
+```yaml
+uri:
+  url: "http://localhost:{{ app_port }}/"
+  status_code: 200
+```
+If health verification fails, the playbook stops.
+
+This code was created and can be found in its entirety at *[deploy_docker.yml](./Part2/ansible/deploy_docker.yml)*
+
+### 9. Post Actions
 
 The first section inside always ensures that test results are always collected from the build directory and made available to Jenkins:
 
@@ -922,14 +993,12 @@ These notifications use a specific Discord Webhook URL which is stored securely 
 
 # Alternative Solution
 
-## 1. Introduction
-
 In our original setup, I used Jenkins as the main configuration management and CI/CD automation tool. Jenkins is a well known, highly customizable automation server, but it requires a self managed environment (installations, plugins, agents, etc.).
 For this alternative solution, I decided to explore GitHub Actions because it is cloud hosted, integrated directly into GitHub repositories, and generally easier to work with for small to medium projects.
 
 Here i will ,explain how GitHub Actions compares with Jenkins, highlights the differences in features, and present how GitHub Actions could be used to achieve the same goals required for this assignment.
 
-## 2. Alternative Tool: GitHub Actions
+## 1. Alternative Tool: GitHub Actions
 
 GitHub Actions is an automation platform built into GitHub that lets you create workflows triggered by events (push, pull request, schedules, etc.).
 It can run CI/CD pipelines, build and test applications, deploy to servers or containers, and manage configuration tasks through scripts.
@@ -946,7 +1015,7 @@ Key characteristics:
 
 - Strong integration with GitHub ecosystem (issues, PRs, secrets, packages)
 
-## 3. Comparison: GitHub Actions vs Jenkins
+## 2. Comparison: GitHub Actions vs Jenkins
 
 |Feature	                        |Jenkins (Base Solution)	                                |GitHub Actions (Alternative)                                          |
 |---------------------------------|---------------------------------------------------------|----------------------------------------------------------------------|
@@ -962,8 +1031,8 @@ Key characteristics:
 
 GitHub Actions trades some of Jenkins depth and flexibility for simplicity, easier onboarding, and tighter repo integration. For student projects, small teams, or GitHub centred workflows, GitHub Actions is often more practical.
 
-## 4. CI/CD Features Comparison
-### 4.1 CI Pipeline
+## 3. CI/CD Features Comparison
+### 3.1 CI Pipeline
 
 Jenkins:
 
@@ -987,7 +1056,7 @@ GitHub Actions:
 
 GitHub Actions is easier to get started with for CI, while Jenkins allows more fine tuned control for enterprise CI setups.
 
-### 4.2 CD Pipeline
+### 3.2 CD Pipeline
 
 Jenkins:
 
@@ -1008,11 +1077,11 @@ GitHub Actions:
 GitHub Actions is very good for cloud deployments, especially GitHub Pages, Docker, Kubernetes, and cloud providers.
 Jenkins might be better when the infrastructure is fully on-premise or very custom.
 
-## 5. How GitHub Actions can solve the same goal (design only)
+## 4. How GitHub Actions can solve the same goal (design only)
 
 Below I describe how GitHub Actions would be used to achieve the same tasks that Jenkins was used for in the original assignment. This is a design explanation, not a full implementation.
 
-5.1 Workflow Structure
+### 4.1 Workflow Structure
 
 In GitHub Actions, all workflows are stored inside:
 
@@ -1038,7 +1107,7 @@ This file would define jobs like:
 
 These jobs can run in sequence or in parallel depending on the workflow design.
 
-### 5.2 Example goals mapping (Conceptual)
+### 4.2 Example goals mapping (Conceptual)
 
 Below I map common assignment goals to GitHub Actions equivalents:
 
@@ -1110,7 +1179,7 @@ Deploy to a VM through SSH:
 GitHub Actions uses GitHub Secrets, which are encrypted and injected into workflows.
 This replaces Jenkins credentials storage.
 
-### 6. Advantages of Using GitHub Actions for This Assignment
+### 5. Advantages of Using GitHub Actions for This Assignment
 
 - No need to install or maintain Jenkins server
 
@@ -1124,7 +1193,7 @@ This replaces Jenkins credentials storage.
 
 - Encourages good DevOps practices with minimal overhead
 
-### 7. Disadvantages / Limitations
+### 6. Disadvantages / Limitations
 
 - Harder to implement extremely custom or legacy workflows
 
